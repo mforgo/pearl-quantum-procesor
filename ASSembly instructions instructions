@@ -1,0 +1,36 @@
+oznaceni registru:
+p0
+p1
+...
+pn
+
+[p2] == hodnota v registru
+b == boolovský registr, ukládá booly, protože b jako boolean
+
+oznaceni pameti:
+h1234
+h1258
+
+cislo oznacuje pozici v pameti
+
+instrukce:
+presunove:
+mov p0 p1       presune z p0 do p1, cislo v p0 se zachova
+mov p0 h2587    presune z p0 do h2587
+mov [p2] p7     presune z adrese zapsané na p2 do p7
+mov b p2        presune z b do p2, b se zachova
+
+aritmeticke:
+add p2 p1       adduje p2 a p1, vysledek do p2
+sub p2 p1       subtrahuje p1 od p2, vysledek do p2
+dvd p2 p1       dividuje p2 p1, výsledek do p2
+mul p2 p1       multiplikuje p2 a p1, výsledek do
+neg p2          neguje p2, výsledek do p2
+
+logicke:
+cmp p2 p1       p2 > p1, uloží do b
+eqq p2 p1       p2 == p1, uloží do b
+and p2          p2 and b, vysledek do b
+or p2           p2 or b, vysledek do b
+
+jmp n           skoci na nty radek instrukci
