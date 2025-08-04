@@ -33,4 +33,5 @@ eqq p2 p1       p2 == p1, uloží do b
 and p2          p2 and b, vysledek do b
 or p2           p2 or b, vysledek do b
 
-jmp n           skoci na nty radek instrukci
+jmp n           skoci na nty radek instrukce
+jmpif n         skoci na nty radek kdyz b je na true
