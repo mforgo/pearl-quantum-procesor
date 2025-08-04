@@ -1,51 +1,56 @@
-# src/alu.py
+# src/alu/quantum_alu.py
 
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
 from qiskit.circuit.library import DraperQFTAdder
+from src.alu.alu_interface import ALUInterface
 
-class QuantumALU:
+class QuantumALU(ALUInterface):
     def __init__(self, num_qubits: int):
-        """
-        A QFT-based adder ALU performing addition modulo 2**num_qubits.
-        Uses Draper’s QFT adder under the hood.
-        """
         if num_qubits < 1:
             raise ValueError("num_qubits must be ≥1")
         self.n = num_qubits
-        # Prepare registers: two inputs (a,b) and classical bits for measurement.
-        self.qr_a = QuantumRegister(self.n, name="a")
-        self.qr_b = QuantumRegister(self.n, name="b")
-        self.cr_a = ClassicalRegister(self.n, name="ca")
-        self.cr_b = ClassicalRegister(self.n, name="cb")
-        # Build a reusable QFT adder gate
-        self.adder = DraperQFTAdder(self.n, kind="fixed", name=f"qft_adder_{self.n}")
+        self.qr_a = QuantumRegister(self.n, "a")
+        self.qr_b = QuantumRegister(self.n, "b")
+        self.cr_b = ClassicalRegister(self.n, "cb")
+        self.adder = DraperQFTAdder(self.n, kind="fixed")
 
-    def add(self, a_val: int, b_val: int) -> int:
-        """
-        Perform (a_val + b_val) mod 2**n on a quantum circuit and return the result.
-        """
-        # Build circuit
-        qc = QuantumCircuit(self.qr_a, self.qr_b, self.cr_a, self.cr_b)
-        # Initialize |a> and |b>
+    def add(self, a: int, b: int) -> (int, int):
+        qc = QuantumCircuit(self.qr_a, self.qr_b, self.cr_b)
         for i in range(self.n):
-            if (a_val >> i) & 1:
-                qc.x(self.qr_a[i])
-            if (b_val >> i) & 1:
-                qc.x(self.qr_b[i])
-        # Apply QFT adder: adds register a into b in Fourier space
+            if (a >> i) & 1: qc.x(self.qr_a[i])
+            if (b >> i) & 1: qc.x(self.qr_b[i])
         qc.append(self.adder.to_gate(), self.qr_a[:] + self.qr_b[:])
-        # Measure resulting b register
         qc.measure(self.qr_b, self.cr_b)
-        # Execute
         backend = Aer.get_backend("aer_simulator")
-        job = execute(qc, backend=backend, shots=1)
-        result = job.result().get_counts()
-        # Extract measured integer value of b
-        bitstr = list(result.keys())[0][: self.n]
-        return int(bitstr[::-1], 2)  # reverse for LSB→MSB
+        job = execute(qc, backend, shots=1)
+        count = job.result().get_counts()
+        bitstr = list(count.keys())[0][: self.n][::-1]
+        result = int(bitstr, 2)
+        carry = 1 if result < b else 0
+        return result, carry
 
-# Example usage (in your processor or test script):
-if __name__ == "__main__":
-    alu = QuantumALU(num_qubits=3)
-    res = alu.add(5, 3)
-    print(f"Quantum ADD 5 + 3 mod 8 = {res}")  # Expect 0 (8 mod 8)
+    def sub(self, a: int, b: int) -> (int, int):
+        # Implement as a + two's complement of b
+        mask = (1 << self.n) - 1
+        b_comp = (~b + 1) & mask
+        return self.add(a, b_comp)
+
+    def bitwise_and(self, a: int, b: int) -> int:
+        # Classical fallback
+        return a & b
+
+    def bitwise_or(self, a: int, b: int) -> int:
+        return a | b
+
+    def bitwise_xor(self, a: int, b: int) -> int:
+        return a ^ b
+
+    def bitwise_not(self, a: int) -> int:
+        mask = (1 << self.n) - 1
+        return (~a) & mask
+
+    def inc(self, a: int) -> (int, int):
+        return self.add(a, 1)
+
+    def dec(self, a: int) -> (int, int):
+        return self.sub(a, 1)
