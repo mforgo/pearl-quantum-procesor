@@ -1,4 +1,5 @@
 import pygame
+import background
 
 class RenderMain:
     def __init__(self):
@@ -7,6 +8,7 @@ class RenderMain:
         pygame.display.set_caption("CPU Emulator")
         self.running = True
         self.base_color = (0, 1, 0)
+        self.background = background.Background(self.screen, self.base_color)
 
     def run(self):
         self.__main_loop()
@@ -28,7 +30,8 @@ class RenderMain:
             self.__render()
     
     def __render(self):
-        self.screen.fill(self.color(0))
+        self.background.render()
+        pygame.display.update()
         pygame.display.flip()
     
     def __handle_events(self):
@@ -37,7 +40,6 @@ class RenderMain:
                 self.running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.running = False
-
 
 test = RenderMain()
 test.run()
