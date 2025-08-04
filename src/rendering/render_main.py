@@ -38,5 +38,6 @@ class RenderMain:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.running = False
 
+
 test = RenderMain()
 test.run()
