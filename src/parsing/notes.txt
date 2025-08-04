@@ -1,0 +1,59 @@
+int name = 1234;
+
+if(neco already in p1){
+    if(neco already in p2){
+        "push p2"
+        "mov p1 p2"
+        "set p1 1234"
+    }
+    else{
+        "mov p1 p2"
+        "set p1 1234"
+    }
+}
+else{
+    "set p1 1234"
+}
+-----------------------------------------------
+bool name = true/false;
+
+if(smt in b){
+    "push b"
+}
+else{
+    "set b true/false"
+}
+-----------------------------------------------
+while(nejaky bool) 
+{
+    instrukce;
+}
+
+
+-------------------------------------------------
+for(int i = 0; i < 100; i++)
+{
+    instrukce;
+    instrukce;
+}
+
+
+------------------------------------------------------
+int name = load();
+
+--------------------------------------------
+print(name);
+----------------------------------------------------
+a = b + c;
+a = b - c;
+a = b * c;
+a = b / c;
+
+
+
+p0 = 0
+b = true/false
+p5, p6 - cykly, iterace
+p1, p2 - aritmetika, logika
+p3 slouží pro pp
+p4 pomocna

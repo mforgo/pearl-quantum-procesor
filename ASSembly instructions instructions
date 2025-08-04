@@ -20,7 +20,8 @@ out p1          vypise hodnotu p1 na vystup
 in p1           nacte hodnotu ze vstupu do p1
 push p1         nacpe p1 do fronky
 pop p1          vytahne z fronty do p1, pokud je fronta prazdna, p1 zustane nezmenen
-pp              vytahne z fronty a nacpe to na zacatek fronty
+#### pp              vytahne z fronty a nacpe to na zacatek fronty
+set p1 1234     nastavi p1 na 1234
 
 aritmeticke:
 add p2 p1       adduje p2 a p1, vysledek do p2
@@ -28,6 +29,7 @@ add p2 p1       adduje p2 a p1, vysledek do p2
 dvd p2 p1       dividuje p2 p1, výsledek do p2
 mul p2 p1       multiplikuje p2 a p1, výsledek do p2
 neg p2          neguje p2, výsledek do p2
+
 
 logicke:
 cmp p2 p1       p2 > p1, uloží do b
