@@ -306,3 +306,12 @@ class Procesor:
         """Execute one instruction"""
         if not self.program:
             self.output
+
+    def run(self):
+        """Run the processor"""
+        self.running = True
+        self.output_handler.print_output("Starting...")
+        while self.running:
+            if not self.step():
+                break
+        self.output_handler.print_output("Stopped")
