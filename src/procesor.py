@@ -301,8 +301,34 @@ class Procesor:
                 self.registers.set("pc", target)
             else:
                 raise ValueError(f"Jump target {target} out of range")
-    
+        
     def step(self):
         """Execute one instruction"""
         if not self.program:
-            self.output
+            self.output_handler.print_error("No program loaded")
+            return False
+        
+        pc = self.registers.get("pc")
+        if pc >= len(self.program):
+            self.output_handler.print_output("Program finished")
+            self.running = False
+            return False
+        
+        instruction = self.program[pc]
+        self.execute_instruction(instruction)
+        
+        # Increment PC unless changed by jump
+        if self.registers.get("pc") == pc:
+            self.registers.set("pc", pc + 1)
+        
+        return True
+
+
+    def run(self):
+        """Run the processor"""
+        self.running = True
+        self.output_handler.print_output("Starting...")
+        while self.running:
+            if not self.step():
+                break
+        self.output_handler.print_output("Stopped")
