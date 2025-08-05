@@ -1,6 +1,6 @@
 # src/alu/classical_alu.py
 
-from .alu_interface.py import ALUInterface
+from .alu_interface import ALUInterface
 
 class ClassicalALU(ALUInterface):
     def __init__(self, bit_width=4):
