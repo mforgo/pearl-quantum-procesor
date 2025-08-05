@@ -1,6 +1,6 @@
 # src/alu/quantum_alu.py
 
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.circuit.library import DraperQFTAdder
 from .alu_interface import ALUInterface
 
