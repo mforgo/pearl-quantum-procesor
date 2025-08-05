@@ -57,3 +57,4 @@ Thumbs.db
 *.hex
 *.dump
 logs/
+*.log
