@@ -1,5 +1,5 @@
 # registers/quantum_registers.py
-from registers_interface import RegisterInterface
+from .registers_interface import RegisterInterface
 
 class QuantumRegisters(RegisterInterface):
     def __init__(self, num_qubits=8):

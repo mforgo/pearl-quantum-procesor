@@ -1,6 +1,6 @@
 # registers/classical_registers.py
 
-from registers_interface import RegisterInterface
+from .registers_interface import RegisterInterface
 
 class ClassicalRegisters(RegisterInterface):
     def __init__(self):
