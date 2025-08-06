@@ -137,6 +137,18 @@ class Procesor:
                 self._execute_jmp(operands)
             elif opcode == 'jmpif':
                 self._execute_jmpif(operands)
+            elif opcode == 'out':
+                self._execute_out(operands)
+            elif opcode == 'in':
+                self._execute_in(operands)
+            elif opcode == 'push':
+                self._execute_push(operands)
+            elif opcode == 'pop':
+                self._execute_pop(operands)
+            elif opcode == 'pp':
+                self._execute_pp(operands)
+            elif opcode == 'not':
+                self._execute_not(operands)
             else:
                 raise ValueError(f"Unknown opcode: {opcode}")
                 
@@ -301,6 +313,50 @@ class Procesor:
                 self.registers.set("pc", target)
             else:
                 raise ValueError(f"Jump target {target} out of range")
+        
+    def _execute_out(self, operands):
+        if len(operands) != 1:
+            raise ValueError("OUT requires 1 operand")
+        typ, val = self.parse_operand(operands[0])
+        value = self.get_operand_value(typ, val)
+        self.output_handler.print_output(f"OUT: {value}")
+
+    def _execute_in(self, operands):
+        if len(operands) != 1:
+            raise ValueError("IN requires 1 operand")
+        typ, val = self.parse_operand(operands[0])
+        input_val = self.input_handler.read_keyboard_input(f"IN for {operands[0]}: ")
+        self.set_operand_value(typ, val, int(input_val))  # nebo podle potřeby typ
+
+    def _execute_push(self, operands):
+        if len(operands) != 1:
+            raise ValueError("PUSH requires 1 operand")
+        typ, val = self.parse_operand(operands[0])
+        value = self.get_operand_value(typ, val)
+        self.memory.memory.append(value)  # pokud používáte deque nebo list
+
+    def _execute_pop(self, operands):
+        if len(operands) != 1:
+            raise ValueError("POP requires 1 operand")
+        typ, val = self.parse_operand(operands[0])
+        if self.memory.memory:
+            value = self.memory.memory.pop(0)
+            self.set_operand_value(typ, val, value)
+        # else: leave unchanged
+
+    def _execute_pp(self, operands):
+        # žádné operandy
+        if not self.memory.memory:
+            return
+        value = self.memory.memory.pop(0)
+        self.memory.memory.insert(0, value)
+
+    def _execute_not(self, operands):
+        if len(operands) != 1 or operands[0] != 'b':
+            raise ValueError("NOT only works for b")
+        value = self.registers.get('b')
+        self.registers.set('b', not value)
+
         
     def step(self):
         """Execute one instruction"""
