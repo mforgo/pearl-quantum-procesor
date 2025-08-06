@@ -1,5 +1,5 @@
 import numpy as np
-from src.procesor import Procesor
+from procesor import Procesor
 
 @pytest.fixture
 def qcpu():

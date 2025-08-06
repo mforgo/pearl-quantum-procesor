@@ -1,5 +1,5 @@
 import pytest
-from src.procesor import Procesor
+from procesor import Procesor
 
 @pytest.fixture
 def cpu():
