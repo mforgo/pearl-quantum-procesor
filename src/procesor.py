@@ -1,9 +1,9 @@
 # src/procesor.py
 
-from src.alu import ClassicalALU, QuantumALU
-from src.memory import ClassicalMemory
-from src.registers import ClassicalRegisters
-from src.io import InputHandler, OutputHandler, ProgramLoader
+from .alu import ClassicalALU, QuantumALU
+from .memory import ClassicalMemory
+from .registers import ClassicalRegisters
+from .io import InputHandler, OutputHandler, ProgramLoader
 
 class Procesor:
     def __init__(self, mode="classical", debug=False):
