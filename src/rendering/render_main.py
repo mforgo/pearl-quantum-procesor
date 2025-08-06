@@ -1,5 +1,6 @@
 import pygame
 import background
+import frontground
 
 class RenderMain:
     def __init__(self):
