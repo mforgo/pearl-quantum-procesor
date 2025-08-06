@@ -2,39 +2,31 @@
 
 from .alu import ClassicalALU, QuantumALU
 from .memory import ClassicalMemory
-from .registers import ClassicalRegisters
+from .registers import ClassicalRegisters, QuantumRegisters
 from .io import InputHandler, OutputHandler, ProgramLoader
 
 class Procesor:
     def __init__(self, mode="classical", debug=False):
-        """
-        Initialize the processor
-        
-        Args:
-            mode: "classical" or "quantum" 
-            debug: Enable debug output
-        """
         self.mode = mode
         self.debug = debug
         self.running = False
-        
-        # Initialize components
+
+        # Common classical registers for PC and b
         self.registers = ClassicalRegisters()
-        self.memory = ClassicalMemory()
-        self.input_handler = InputHandler()
+        self.memory    = ClassicalMemory()
+        self.input_handler  = InputHandler()
         self.output_handler = OutputHandler(log_to_file=debug)
         self.program_loader = ProgramLoader()
-        
-        # Initialize ALU based on mode
+
         if mode == "quantum":
-            self.alu = QuantumALU(num_qubits=4)
+            # Create quantum registers
+            self.quantum_registers = QuantumRegisters(num_qubits=4)
+            # Pass registers into ALU
+            self.alu = QuantumALU(self.quantum_registers)
         else:
             self.alu = ClassicalALU(bit_width=8)
-        
-        # Program and execution state
+
         self.program = []
-        self.current_instruction = 0
-        
         self._debug_print(f"Procesor initialized in {mode} mode")
     
     def _debug_print(self, message):
