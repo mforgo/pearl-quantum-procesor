@@ -149,6 +149,50 @@ class Procesor:
                 self._execute_pp(operands)
             elif opcode == 'not':
                 self._execute_not(operands)
+
+            # === JEDNOQUBITOVÉ KVANTOVÉ BRÁNY ===
+            elif opcode == 'h':
+                self._execute_h(operands)
+            elif opcode == 'x':
+                self._execute_x(operands)
+            elif opcode == 'y':
+                self._execute_y(operands)
+            elif opcode == 'z':
+                self._execute_z(operands)
+            elif opcode == 's':
+                self._execute_s(operands)
+            elif opcode == 't':
+                self._execute_t(operands)
+            elif opcode == 'rx':
+                self._execute_rx(operands)
+            elif opcode == 'ry':
+                self._execute_ry(operands)
+            elif opcode == 'rz':
+                self._execute_rz(operands)
+                
+            # === DVOUQUBITOVÉ KVANTOVÉ BRÁNY ===
+            elif opcode == 'cx' or opcode == 'cnot':
+                self._execute_cx(operands)
+            elif opcode == 'cz':
+                self._execute_cz(operands)
+            elif opcode == 'cy':
+                self._execute_cy(operands)
+            elif opcode == 'ccx' or opcode == 'toffoli':
+                self._execute_ccx(operands)
+            elif opcode == 'swap':
+                self._execute_swap(operands)
+                
+            # === KVANTOVÉ MĚŘENÍ A RESET ===
+            elif opcode == 'measure':
+                self._execute_measure(operands)
+            elif opcode == 'reset':
+                self._execute_reset(operands)
+                
+            # === KVANTOVÉ ALGORITMY ===
+            elif opcode == 'bell':
+                self._execute_bell(operands)
+            elif opcode == 'qft':
+                self._execute_qft(operands)
             else:
                 raise ValueError(f"Unknown opcode: {opcode}")
                 
@@ -357,6 +401,200 @@ class Procesor:
         value = self.registers.get('b')
         self.registers.set('b', not value)
 
+    # === JEDNOQUBITOVÉ BRÁNY ===
+
+    def _execute_h(self, operands):
+        """Execute Hadamard gate"""
+        if len(operands) != 1:
+            raise ValueError("H requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.alu.h_gate(qubit)
+
+    def _execute_x(self, operands):
+        """Execute Pauli-X gate"""
+        if len(operands) != 1:
+            raise ValueError("X requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.alu.x_gate(qubit)
+
+    def _execute_y(self, operands):
+        """Execute Pauli-Y gate"""
+        if len(operands) != 1:
+            raise ValueError("Y requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.alu.y_gate(qubit)
+
+    def _execute_z(self, operands):
+        """Execute Pauli-Z gate"""
+        if len(operands) != 1:
+            raise ValueError("Z requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.alu.z_gate(qubit)
+
+    def _execute_s(self, operands):
+        """Execute S gate (phase π/2)"""
+        if len(operands) != 1:
+            raise ValueError("S requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.alu.s_gate(qubit)
+
+    def _execute_t(self, operands):
+        """Execute T gate (phase π/4)"""
+        if len(operands) != 1:
+            raise ValueError("T requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.alu.t_gate(qubit)
+
+    def _execute_rx(self, operands):
+        """Execute X-rotation gate"""
+        if len(operands) != 2:
+            raise ValueError("RX requires 2 operands: angle qubit")
+        angle = float(operands[0])
+        qubit = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.rx_gate(qubit, angle)
+
+    def _execute_ry(self, operands):
+        """Execute Y-rotation gate"""
+        if len(operands) != 2:
+            raise ValueError("RY requires 2 operands: angle qubit")
+        angle = float(operands[0])
+        qubit = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.ry_gate(qubit, angle)
+
+    def _execute_rz(self, operands):
+        """Execute Z-rotation gate"""
+        if len(operands) != 2:
+            raise ValueError("RZ requires 2 operands: angle qubit")
+        angle = float(operands[0])
+        qubit = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.rz_gate(qubit, angle)
+
+    # === DVOUQUBITOVÉ BRÁNY ===
+
+    def _execute_cx(self, operands):
+        """Execute CNOT gate"""
+        if len(operands) != 2:
+            raise ValueError("CX requires 2 operands")
+        control = self.parse_qubit(operands[0])
+        target = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.cnot_gate(control, target)
+
+    def _execute_cz(self, operands):
+        """Execute Controlled-Z gate"""
+        if len(operands) != 2:
+            raise ValueError("CZ requires 2 operands")
+        control = self.parse_qubit(operands[0])
+        target = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.cz_gate(control, target)
+
+    def _execute_cy(self, operands):
+        """Execute Controlled-Y gate"""
+        if len(operands) != 2:
+            raise ValueError("CY requires 2 operands")
+        control = self.parse_qubit(operands[0])
+        target = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.cy_gate(control, target)
+
+    def _execute_ccx(self, operands):
+        """Execute Toffoli (CCX) gate"""
+        if len(operands) != 3:
+            raise ValueError("CCX requires 3 operands")
+        control1 = self.parse_qubit(operands[0])
+        control2 = self.parse_qubit(operands[1])
+        target = self.parse_qubit(operands[2])
+        if self.mode == "quantum":
+            self.alu.ccx_gate(control1, control2, target)
+
+    def _execute_swap(self, operands):
+        """Execute SWAP gate"""
+        if len(operands) != 2:
+            raise ValueError("SWAP requires 2 operands")
+        q1 = self.parse_qubit(operands[0])
+        q2 = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.swap_gate(q1, q2)
+
+    # === MĚŘENÍ A RESET ===
+
+    def _execute_measure(self, operands):
+        """Execute measurement"""
+        if len(operands) != 2:
+            raise ValueError("MEASURE requires 2 operands: qubit register")
+        qubit = self.parse_qubit(operands[0])
+        reg_type, reg_val = self.parse_operand(operands[1])
+        
+        if self.mode == "quantum":
+            result = self.quantum_registers.measure(qubit)
+            self.set_operand_value(reg_type, reg_val, result)
+
+    def _execute_reset(self, operands):
+        """Execute qubit reset"""
+        if len(operands) != 1:
+            raise ValueError("RESET requires 1 operand")
+        qubit = self.parse_qubit(operands[0])
+        if self.mode == "quantum":
+            self.quantum_registers.set(qubit, 0)  # Reset to |0⟩
+
+    # === KVANTOVÉ ALGORITMY ===
+
+    def _execute_bell(self, operands):
+        """Create Bell state between two qubits"""
+        if len(operands) != 2:
+            raise ValueError("BELL requires 2 operands")
+        q1 = self.parse_qubit(operands[0])
+        q2 = self.parse_qubit(operands[1])
+        if self.mode == "quantum":
+            self.alu.create_bell_state(q1, q2)
+
+    def _execute_qft(self, operands):
+        """Execute Quantum Fourier Transform"""
+        if len(operands) < 1:
+            raise ValueError("QFT requires at least 1 operand")
+        qubits = [self.parse_qubit(op) for op in operands]
+        if self.mode == "quantum":
+            self.alu.quantum_fourier_transform(qubits)
+
+    # === POMOCNÉ FUNKCE ===
+
+    def parse_qubit(self, operand):
+        """Parse qubit notation q0, q1, etc."""
+        if operand.startswith('q') and operand[1:].isdigit():
+            qubit_num = int(operand[1:])
+            if 0 <= qubit_num < self.quantum_registers.num_qubits:
+                return qubit_num
+            else:
+                raise ValueError(f"Qubit {qubit_num} out of range")
+        else:
+            raise ValueError(f"Invalid qubit: {operand}")
+
+    def print_quantum_state(self):
+        """Print current quantum state for debugging"""
+        if self.mode == "quantum":
+            state = self.quantum_registers.get_full_state()
+            self.output_handler.print_output("=== Quantum State ===")
+            for i, amplitude in enumerate(state):
+                if abs(amplitude) > 1e-10:  # Only show non-zero amplitudes
+                    binary = format(i, f'0{self.quantum_registers.num_qubits}b')
+                    self.output_handler.print_output(f"|{binary}⟩: {amplitude:.4f}")
+            
+            # Show probabilities for each qubit
+            self.output_handler.print_output("=== Qubit Probabilities ===")
+            for q in range(self.quantum_registers.num_qubits):
+                prob_0 = self.quantum_registers.get_probability(q, 0)
+                prob_1 = self.quantum_registers.get_probability(q, 1)
+                self.output_handler.print_output(f"q{q}: |0⟩={prob_0:.4f}, |1⟩={prob_1:.4f}")
         
     def step(self):
         """Execute one instruction"""
