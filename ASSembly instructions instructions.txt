@@ -18,9 +18,9 @@ mov p0 p1       presune z p0 do p1, cislo v p0 se zachova
 mov b p2        presune z b do p2, b se zachova
 out p1          vypise hodnotu p1 na vystup
 in p1           nacte hodnotu ze vstupu do p1
-push p1         nacpe p1 do fronky
-pop p1          vytahne z fronty do p1, pokud je fronta prazdna, p1 zustane nezmenen
-#### pp              vytahne z fronty a nacpe to na zacatek fronty
+push p1         nacpe p1 na stack do pameti
+pop p1          zkrati stack o nejvyšší pozici a ulozi do p1
+mov 1234 p1     presune z pozice v pameti 1234 do p1
 set p1 1234     nastavi p1 na 1234
 
 aritmeticke:
