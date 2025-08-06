@@ -5,7 +5,7 @@ from src.procesor import Procesor
 def main():
     cpu = Procesor(debug=True)
     # Load your assembly file; path is relative to where you run main.py
-    if not cpu.load_program("programs/myproogram.asm"):
+    if not cpu.load_program("programs/myprogram.asm"):
         return
     cpu.run()
 
