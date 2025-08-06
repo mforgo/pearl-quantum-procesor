@@ -1,5 +1,6 @@
 import pygame
 from random import randint
+import frontground
 
 # === CONFIGURATION ===
 CHAR_COLUMNS = 80         # Number of columns of characters
@@ -111,13 +112,17 @@ def main():
     bg = Background(screen)
     clock = pygame.time.Clock()
 
+    fg = frontground.TextWindow(screen, (60, 60), pos=(20, 20))
+
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            fg.handle_event(event)
 
         bg.render()
+        fg.render()
         pygame.display.flip()
         clock.tick(FPS)  # Limits the loop to FPS frames per second.
 
