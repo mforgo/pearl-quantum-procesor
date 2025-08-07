@@ -3,12 +3,7 @@ int name = 1234;
 "set p1 1234"
 "push p1"
 -----------------------------------------------
-bool name = true/false;
-
-"set p1 true/false"
-"push p1"
------------------------------------------------
-while(nejaky bool) 
+while(nejaky bool)
 {
     instrukce;
 }
@@ -20,7 +15,7 @@ while(nejaky bool)
 "jmp zacatek"
 
 -------------------------------------------------
-for(int i = 0; i < 100; i++)
+for(int i = 0, i < 100, i++)
 {
     instrukce;
     instrukce;
@@ -36,15 +31,10 @@ for(int i = 0; i < 100; i++)
 if(podminka){
     instrukce;
 }
-else{
-
-}
 
 "vyhodnoceni podminky"
 "neg b"
-"jmpif na else"
-"instrukce"
-"jmp konec"
+"jmpif konec"
 "instrukce elsu"
 "jmp konec"
 ------------------------------------------------------
