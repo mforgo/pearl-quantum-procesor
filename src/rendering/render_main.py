@@ -32,7 +32,9 @@ class RenderMain:
         self.memory_window = frontground.RegisterWindow(self.screen, (40.74, 47.83), pos=(51.85, 43.48), base_color=self.base_color)
         self.clock = pygame.time.Clock()
 
-    def run(self):
+    def run(self, ram, registers):
+        self.memory = ram
+        self.registers = registers
         return self.__main_loop()
 
     def __main_loop(self):
@@ -48,6 +50,9 @@ class RenderMain:
         self.step_button.render()
         self.stop_button.render()
         self.console_window.render()
+        for i in range(8):
+            self.register_window[i].render(self.registers[i])
+        self.memory_window.render("")
         pygame.display.update()
         pygame.display.flip()
     
@@ -68,9 +73,9 @@ class RenderMain:
         self.console_window.recive_text(text, erase=False)
     
     def set_registers(self, registers):
-        for register, i in zip(registers, range(len(self.register_window))):
-            self.register_window[i].render(register)
-    
+        for i in range(len(self.register_window)):
+            self.register_window[i].render(registers[i])
+
     def set_memory(self, memory):
         self.memory_window.render(memory)
 

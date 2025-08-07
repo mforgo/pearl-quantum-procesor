@@ -14,8 +14,11 @@ def main():
     while True:
         now = pygame.time.get_ticks()
         rendering.clock.tick(20)  # Limit to ~20 FPS
+        print(cpu.registers.regs)
+        # Get status info and update GUI register and memory views
+        status = cpu.status(include_registers=True, include_ram=True)
 
-        if not rendering.run():
+        if not rendering.run("", cpu.registers.regs):
             break  # Exit main loop if GUI is closed
 
         start = rendering.get_buttons()
@@ -33,7 +36,7 @@ def main():
                 cpu.step() and now % 1000 == 0  # Step once to initialize
             elif cpu_running == "run":
                 cpu.step()
-        elif start["step"]: or cpu_running == "step":
+        elif start["step"] or cpu_running == "step":
             if cpu_running == "":
                 program_code = rendering.get_code()
                 if not cpu.load_program_from_string(program_code):
@@ -49,18 +52,13 @@ def main():
         elif start["stop"]:
             cpu_running = ""
 
-        # Get status info and update GUI register and memory views
-        try:
-            status = cpu.status(include_registers=True, include_ram=True)
-            if 'registers' in status:
-                rendering.set_registers(status['registers'].items())
-            if 'ram' in status:
-                rendering.set_memory(status['ram'].items())
-        except Exception as e:
-            # Silently catch errors or optionally log
-            pass
-
-    pygame.quit()
+        
+        
+        # if status["ram"] != None:
+        #     rendering.set_memory(status['ram'])
+        # else:
+        #     rendering.memory_window.render("00000000")
+        
 
 if __name__ == "__main__":
     main()

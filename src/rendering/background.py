@@ -101,6 +101,8 @@ class Background:
         for x, y, repeat_offset in self.char_lines:
             self._draw_column(x, self.y_offset + y, length, repeat_offset)
         self.y_offset = (self.y_offset + self.char_size)# % (self.screen_size[1] * 2)
+    
+    
 
 def main():
     """

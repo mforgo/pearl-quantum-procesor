@@ -237,11 +237,9 @@ class RegisterWindow:
         # Draw text
         x = self.pos[0] + 8
         y = self.pos[1] + 8
-        line_height = self.font.get_height()
         
-        for i, line in enumerate(text.splitlines()):
-            text_surface = self.font.render(line, True, self._color(50))
-            self.screen.blit(text_surface, (x, y + i * line_height))
+        text_surface = self.font.render(str(text), True, self._color(50))
+        self.screen.blit(text_surface, (x, y))
 
 class Button:
     """
