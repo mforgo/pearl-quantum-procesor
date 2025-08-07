@@ -26,7 +26,7 @@ def main():
                 cpu.input_handler.load_program_from_string(code)
                 cpu_running = "run"
                 cpu.step()
-            elif cpu_running == "run":
+            elif cpu_running == "run" and now % 1000 == 0:  # Run every 1000 ms
                 cpu.step()
         elif start["step"]:
             if cpu_running == "":

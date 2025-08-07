@@ -48,9 +48,6 @@ class RenderMain:
         self.step_button.render()
         self.stop_button.render()
         self.console_window.render()
-        for window in self.register_window:
-            window.render("123456789012345678")
-        self.memory_window.render("Memory content here")
         pygame.display.update()
         pygame.display.flip()
     
@@ -72,11 +69,11 @@ class RenderMain:
     
     def set_registers(self, registers):
         for register, i in zip(registers, range(len(self.register_window))):
-            self.register_window[i].set_value(register)
+            self.register_window[i].render(register)
     
     def set_memory(self, memory):
-        self.memory_window.set_value(memory)
-    
+        self.memory_window.render(memory)
+
     def get_buttons(self):
         return {
             "run": self.working,
