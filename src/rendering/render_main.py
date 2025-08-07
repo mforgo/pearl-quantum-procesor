@@ -1,5 +1,6 @@
 import pygame
 import background
+import frontground
 
 class RenderMain:
     def __init__(self):
@@ -9,6 +10,7 @@ class RenderMain:
         self.running = True
         self.base_color = (0, 1, 0)
         self.background = background.Background(self.screen, self.base_color)
+        self.clock = pygame.time.Clock()
 
     def run(self):
         self.__main_loop()
@@ -28,7 +30,8 @@ class RenderMain:
         while self.running:
             self.__handle_events()
             self.__render()
-    
+            self.clock.tick(20)
+
     def __render(self):
         self.background.render()
         pygame.display.update()
