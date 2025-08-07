@@ -94,10 +94,10 @@ class Procesor:
         if include_registers:
             # Assuming self.registers has a method or attribute to get all registers as dict
             if hasattr(self.registers, 'dump'):
-                status['registers'] = self.registers.dump()
+                status['registers'] = self.registers.regs  # e.g. a method that returns al
             else:
                 # Fallback: shallow copy of .registers dict attribute or however registers are stored
-                status['registers'] = dict(self.registers.registers) if hasattr(self.registers, 'registers') else None
+                status['registers'] = [0]*8
 
         if include_pc:
             if hasattr(self.registers, 'get'):
