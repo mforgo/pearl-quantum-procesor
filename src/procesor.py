@@ -44,6 +44,61 @@ class Procesor:
         if self.debug:
             self.output_handler.print_debug(message, debug_enabled=True)
 
+    def status(self, include_ram=False, include_registers=False, include_current_instruction=False, include_pc=False, include_clock=False):
+        """
+        Return a dict representing current processor status parts based on flags.
+
+        Parameters:
+            include_ram (bool): Include a snapshot of classical memory (dict or list).
+            include_registers (bool): Include classical registers states.
+            include_current_instruction (bool): Include the instruction at the current program counter.
+            include_pc (bool): Include the current program counter value.
+            include_clock (bool): Include the current clock cycle count.
+
+        Returns:
+            dict: Status snapshot with selected information.
+        """
+        status = {}
+
+        if include_ram:
+            # Assuming self.memory has a .dump() or similar method; else provide your own copy
+            if hasattr(self.memory, 'dump'):
+                status['ram'] = self.memory.dump()
+            else:
+                # Fallback: shallow copy if .memory attribute is e.g. a list or dict
+                status['ram'] = dict(self.memory.memory) if hasattr(self.memory, 'memory') else None
+
+        if include_registers:
+            # Assuming self.registers has a method or attribute to get all registers as dict
+            if hasattr(self.registers, 'dump'):
+                status['registers'] = self.registers.dump()
+            else:
+                # Fallback: shallow copy of .registers dict attribute or however registers are stored
+                status['registers'] = dict(self.registers.registers) if hasattr(self.registers, 'registers') else None
+
+        if include_pc:
+            if hasattr(self.registers, 'get'):
+                status['pc'] = self.registers.get("pc")
+            else:
+                status['pc'] = None
+
+        if include_current_instruction:
+            pc = status.get('pc')
+            if pc is None:
+                # Try to get pc now if not already fetched
+                if hasattr(self.registers, 'get'):
+                    pc = self.registers.get("pc")
+            if pc is not None and 0 <= pc < len(self.program):
+                status['current_instruction'] = self.program[pc]
+            else:
+                status['current_instruction'] = None
+
+        if include_clock:
+            status['clock'] = getattr(self, 'clock', None)
+
+        return status
+
+
     def load_program(self, filename):
         """Load program from file."""
         try:
