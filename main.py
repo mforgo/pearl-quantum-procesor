@@ -6,7 +6,9 @@ from src.procesor import Procesor
 def main():
     rendering = render_main.RenderMain()
     cpu = Procesor()
-    # cpu.run()
+    cpu_running = ""
+    cpu.status()
+    cpu.step()
     while True:
         now = pygame.time.get_ticks()
         rendering.clock.tick(20)
@@ -15,6 +17,30 @@ def main():
 
         if not rendering.run():
             break
+
+        start = rendering.get_buttons()
+        if start["run"] or cpu_running == "run":
+            if cpu_running == "":
+                cpu.input_handler.load_program_from_string(rendering.get_code())
+                cpu_running = "run"
+                cpu.step()
+            elif cpu_running == "run":
+                cpu.step()
+        elif start["step"]:
+            if cpu_running == "":
+                cpu.input_handler.load_program_from_string(rendering.get_code())
+                cpu_running = "step"
+            elif cpu_running == "step":
+                cpu.step()
+        elif start["stop"]:
+            cpu_running = ""
+        
+        status = cpu.status(include_registers=True, include_ram=True)
+        try:
+            rendering.set_registers(status['registers'].items())
+            rendering.set_memory(status['ram'].items())
+        except Exception as e:
+            pass
 
     pygame.quit()
 

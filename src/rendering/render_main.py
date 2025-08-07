@@ -35,16 +35,6 @@ class RenderMain:
     def run(self):
         return self.__main_loop()
 
-    def __color(self, percentage):
-        """Returns a color based on the percentage."""
-        base_color = [int(self.base_color[0] * 255), int(self.base_color[1] * 255), int(self.base_color[2] * 255)]
-        if percentage <= 50:
-            return (base_color[0] * (percentage / 50), base_color[1] * (percentage / 50), base_color[2] * (percentage / 50))
-        else:
-            return (255 if base_color[0] == 255 else base_color[0] * ((100 - percentage) / 50), 
-                    255 if base_color[1] == 255 else base_color[1] * ((100 - percentage) / 50), 
-                    255 if base_color[2] == 255 else base_color[2] * ((100 - percentage) / 50))
-
     def __main_loop(self):
         self.console_window.recive_text("some text here", erase=True)
         self.__handle_events()
@@ -64,15 +54,46 @@ class RenderMain:
         pygame.display.update()
         pygame.display.flip()
     
+    def get_code(self):
+        return self.code_window.return_text()
+
+    def get_console_text(self):
+        return self.console_window.return_text()
+    
+    def set_console_text(self, text):
+        if text is None:
+            return
+        self.console_window.recive_text(text, erase=True)
+    
+    def add_console_text(self, text):
+        if text is None:
+            return
+        self.console_window.recive_text(text, erase=False)
+    
+    def set_registers(self, registers):
+        for register, i in zip(registers, range(len(self.register_window))):
+            self.register_window[i].set_value(register)
+    
+    def set_memory(self, memory):
+        self.memory_window.set_value(memory)
+    
+    def get_buttons(self):
+        return {
+            "run": self.working,
+            "step": self.stepping,
+            "stop": self.stopping
+        }
+    
+
     def __handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.running = False
-            self.run_button.handle_event(event)
-            self.step_button.handle_event(event)
-            self.stop_button.handle_event(event)
+            self.working = self.run_button.handle_event(event)
+            self.stepping = self.step_button.handle_event(event)
+            self.stopping = self.stop_button.handle_event(event)
             self.code_window.handle_event(event)
             self.console_window.handle_event(event)
             if event.type == pygame.VIDEORESIZE:
