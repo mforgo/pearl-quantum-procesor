@@ -29,7 +29,7 @@ class Code_window:
 
     def _reinit(self):
         self.screen_size = self.screen.get_size()
-        self.char_size = max(self.screen_size[0] // 60, 1)
+        self.char_size = max(self.screen_size[0] // 130, 1)
         self.font = pygame.font.SysFont("consolas", int(self.char_size * 1.5))
         self.bg_color = self._color(10)  # Background color
         self.text_color = self._color(50)
@@ -51,6 +51,13 @@ class Code_window:
             return tuple(int(b + (255 - b) * factor) for b in base)
 
     def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            if (self.pos[0] <= mouse_x <= self.pos[0] + self.size[0] and
+                self.pos[1] <= mouse_y <= self.pos[1] + self.size[1]):
+                self.active = True
+            else:
+                self.active = False
         if not self.active:
             return
 
@@ -169,8 +176,18 @@ class Code_window:
         Return the text content of the window.
         """
         return "\n".join(self.text_lines)
+    
+    def recive_text(self, text, erase=True):
+        if erase:
+            self.text_lines = [text]
+            self.cursor_pos = [0, 0]
+        else:
+            self.text_lines.append(text)
+            self.text_lines.append("")  
+            self.cursor_pos[1] = len(self.text_lines[0])
 
-class Text_output_window:
+class RegisterWindow:
+    
 
     def __init__(self, screen, size, pos=(0, 0), base_color=(0, 1, 0)):
         self.screen = screen
@@ -181,7 +198,7 @@ class Text_output_window:
     
     def _reinit(self):
         self.screen_size = self.screen.get_size()
-        self.char_size = max(self.screen_size[0] // 60, 1)
+        self.char_size = max(self.screen_size[0] // 130, 1)
         self.font = pygame.font.SysFont("consolas", int(self.char_size * 1.5))
         self.size = (self.screen_size[0] * self.percentage_size[0], self.screen_size[1] * self.percentage_size[1])
         self.pos = (self.screen_size[0] * self.percentage_pos[0], self.screen_size[1] * self.percentage_pos[1])
@@ -198,7 +215,7 @@ class Text_output_window:
             factor = (percentage - 50) / 50
             return tuple(int(b + (255 - b) * factor) for b in base)
     
-    def render(self, text):
+    def render(self, text=""):
         # Draw background
         pygame.draw.rect(
             self.screen, 
@@ -225,29 +242,128 @@ class Text_output_window:
             text_surface = self.font.render(line, True, self._color(50))
             self.screen.blit(text_surface, (x, y + i * line_height))
 
+class Button:
+    """
+    A simple button class for rendering buttons.
+    """
+    def __init__(self, screen, size, pos=(0, 0), base_color=(0, 1, 0), symbol=""):
+        self.screen = screen
+        self.percentage_size = (size[0] / 100, size[1] / 100)
+        self.percentage_pos = (pos[0] / 100, pos[1] / 100)
+        self.base_color = base_color
+        self.symbol = symbol
+        self._reinit()
+    
+    def _reinit(self):
+        self.screen_size = self.screen.get_size()
+        self.size = (self.screen_size[0] * self.percentage_size[0], self.screen_size[1] * self.percentage_size[1])
+        self.pos = (self.screen_size[0] * self.percentage_pos[0], self.screen_size[1] * self.percentage_pos[1])
+    
+    def _color(self, percentage):
+        """
+        Calculate color based on percentage (0-100).
+        """
+        base = [int(c * 255) for c in self.base_color]
+        if percentage <= 50:
+            factor = percentage / 50
+            return tuple(int(b * factor) for b in base)
+        else:
+            factor = (percentage - 50) / 50
+            return tuple(int(b + (255 - b) * factor) for b in base)
+    
+    def _draw_symbol(self):
+        """
+        Draw the button symbol if it exists.
+        """
+        if self.symbol:
+            if self.symbol == "RUN":
+                pygame.draw.polygon(self.screen, self._color(50), [
+                    (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] / 4),
+                    (self.pos[0] + self.size[0] / 4 * 3, self.pos[1] + self.size[1] / 2),
+                    (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] / 4 * 3)
+                ])
+            elif self.symbol == "STOP":
+                pygame.draw.rect(self.screen, self._color(50), (
+                    self.pos[0] + self.size[0] / 4,
+                    self.pos[1] + self.size[1] / 4,
+                    self.size[0] / 2,
+                    self.size[1] / 2
+                ))
+            elif self.symbol == "STEP":
+                pygame.draw.polygon(self.screen, self._color(50), [
+                    (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] / 4),
+                    (self.pos[0] + self.size[0] / 2, self.pos[1] + self.size[1] / 4),
+                    (self.pos[0] + self.size[0] / 2, self.pos[1] + self.size[1] / 2),
+                    (self.pos[0] + self.size[0] / 4 * 3, self.pos[1] + self.size[1] / 2),
+                    (self.pos[0] + self.size[0] / 4 * 3, self.pos[1] + self.size[1] / 4 * 3),
+                    (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] / 4 * 3)
+                ])
+
+    def render(self):
+        pygame.draw.rect(
+            self.screen,
+            self._color(10),
+            (*self.pos, *self.size)
+        )
+
+        # Draw outline
+        outline_rect = pygame.Rect(
+            self.pos[0], self.pos[1], self.size[0], self.size[1]
+        )
+        pygame.draw.rect(
+            self.screen,
+            self._color(50),
+            outline_rect,
+            2  # thickness
+        )
+        self._draw_symbol()
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            if (self.pos[0] <= mouse_x <= self.pos[0] + self.size[0] and
+                self.pos[1] <= mouse_y <= self.pos[1] + self.size[1]):
+                return True  # Button clicked
+        return False  # Button not clicked
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((640, 480), pygame.RESIZABLE)
     pygame.display.set_caption("TextWindow Demo")
     #text_window = Code_window(screen, (60, 60), pos=(20, 20))
-    text_output = Text_output_window(screen, (30, 30), pos=(20, 20))
+    text_output = RegisterWindow(screen, (30, 30), pos=(20, 20))
+    button = Button(screen, (20, 10), pos=(70, 70), base_color=(0, 1, 0), symbol="STEP")
+    button2 = Button(screen, (20, 10), pos=(70, 90), base_color=(0, 1, 0), symbol="RUN")
+    button3 = Button(screen, (20, 10), pos=(50, 70), base_color=(0, 1, 0), symbol="STOP")
 
     clock = pygame.time.Clock()
     running = True
     while running:
         for event in pygame.event.get():
+            if button.handle_event(event):
+                print("Step button clicked")
+            if button2.handle_event(event):
+                print("Run button clicked")
+            if button3.handle_event(event):
+                print("Stop button clicked")
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
                 #text_window._reinit()
                 text_output._reinit()
+                button._reinit()
+                button2._reinit()
+                button3._reinit()
             #else:
                 #text_window.handle_event(event)
 
         screen.fill((30, 30, 30))
         #text_window.render()
-        text_output.render("idk tvoje mama smrdi\nna hovno")
+        button.render()
+        button2.render()
+        button3.render()
+        text_output.render("idk")
         pygame.display.flip()
         clock.tick(30)
 
