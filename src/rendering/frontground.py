@@ -29,7 +29,7 @@ class Code_window:
 
     def _reinit(self):
         self.screen_size = self.screen.get_size()
-        self.char_size = max(self.screen_size[0] // 60, 1)
+        self.char_size = max(self.screen_size[0] // 130, 1)
         self.font = pygame.font.SysFont("consolas", int(self.char_size * 1.5))
         self.bg_color = self._color(10)  # Background color
         self.text_color = self._color(50)
@@ -51,6 +51,13 @@ class Code_window:
             return tuple(int(b + (255 - b) * factor) for b in base)
 
     def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            if (self.pos[0] <= mouse_x <= self.pos[0] + self.size[0] and
+                self.pos[1] <= mouse_y <= self.pos[1] + self.size[1]):
+                self.active = True
+            else:
+                self.active = False
         if not self.active:
             return
 
@@ -169,8 +176,18 @@ class Code_window:
         Return the text content of the window.
         """
         return "\n".join(self.text_lines)
+    
+    def recive_text(self, text, erase=True):
+        if erase:
+            self.text_lines = [text]
+            self.cursor_pos = [0, 0]
+        else:
+            self.text_lines.append(text)
+            self.text_lines.append("")  
+            self.cursor_pos[1] = len(self.text_lines[0])
 
-class Text_output_window:
+class RegisterWindow:
+    
 
     def __init__(self, screen, size, pos=(0, 0), base_color=(0, 1, 0)):
         self.screen = screen
@@ -181,7 +198,7 @@ class Text_output_window:
     
     def _reinit(self):
         self.screen_size = self.screen.get_size()
-        self.char_size = max(self.screen_size[0] // 60, 1)
+        self.char_size = max(self.screen_size[0] // 130, 1)
         self.font = pygame.font.SysFont("consolas", int(self.char_size * 1.5))
         self.size = (self.screen_size[0] * self.percentage_size[0], self.screen_size[1] * self.percentage_size[1])
         self.pos = (self.screen_size[0] * self.percentage_pos[0], self.screen_size[1] * self.percentage_pos[1])
@@ -198,7 +215,7 @@ class Text_output_window:
             factor = (percentage - 50) / 50
             return tuple(int(b + (255 - b) * factor) for b in base)
     
-    def render(self, text):
+    def render(self, text=""):
         # Draw background
         pygame.draw.rect(
             self.screen, 
@@ -230,7 +247,7 @@ def main():
     screen = pygame.display.set_mode((640, 480), pygame.RESIZABLE)
     pygame.display.set_caption("TextWindow Demo")
     #text_window = Code_window(screen, (60, 60), pos=(20, 20))
-    text_output = Text_output_window(screen, (30, 30), pos=(20, 20))
+    text_output = RegisterWindow(screen, (30, 30), pos=(20, 20))
 
     clock = pygame.time.Clock()
     running = True
