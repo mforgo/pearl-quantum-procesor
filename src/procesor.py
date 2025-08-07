@@ -44,6 +44,29 @@ class Procesor:
         if self.debug:
             self.output_handler.print_debug(message, debug_enabled=True)
 
+    def load_program_from_string(self, program_str):
+        try:
+            if hasattr(self.program_loader, 'parse_program_str'):
+                self.program = self.program_loader.parse_program_str(program_str)
+            else:
+                lines = [line.strip() for line in program_str.strip().splitlines() if line.strip() and not line.strip().startswith('#')]
+                instructions = []
+                for line in lines:
+                    parts = line.split()
+                    opcode = parts[0]
+                    operands = parts[1:] if len(parts) > 1 else []
+                    instructions.append({"opcode": opcode, "operands": operands})
+                self.program = instructions
+
+            self.registers.set("pc", 0)
+            self.clock = 0
+            self._debug_print(f"Loaded {len(self.program)} instructions from string")
+            return True
+        except Exception as e:
+            self.output_handler.print_error(f"Failed to load program from string: {e}")
+            return False
+
+
     def status(self, include_ram=False, include_registers=False, include_current_instruction=False, include_pc=False, include_clock=False):
         """
         Return a dict representing current processor status parts based on flags.

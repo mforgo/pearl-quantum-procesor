@@ -1,53 +1,66 @@
 # main.py
+
 import pygame
+
 from src.rendering import render_main
-from src.procesor import Procesor  
+from src.procesor import Procesor
 
 def main():
+    pygame.init()
     rendering = render_main.RenderMain()
-    cpu = Procesor()
-    cpu_running = ""
-    cpu.status()
-    cpu.step()
+    cpu = Procesor(debug=True)
+    cpu_running = ""  # Track CPU run state: "", "run", or "step"
+
     while True:
         now = pygame.time.get_ticks()
-        rendering.clock.tick(20)
-        if now % 1000 == 0:
-            print("Main loop running at 1 FPS")
+        rendering.clock.tick(20)  # Limit to ~20 FPS
 
         if not rendering.run():
-            break
+            break  # Exit main loop if GUI is closed
 
         start = rendering.get_buttons()
+
+        # Start CPU run or step on button presses and load program code from GUI editor
         if start["run"] or cpu_running == "run":
             if cpu_running == "":
-                code = rendering.get_code()
-                print(f"Loading code: {code}")
-                cpu.input_handler.load_program_from_string(code)
+                # Load program from GUI code editor string to processor (fixed)
+                program_code = rendering.get_code()
+                if not cpu.load_program_from_string(program_code):
+                    rendering.set_console_text("Error loading program from GUI editor.")
+                    cpu_running = ""
+                    continue
                 cpu_running = "run"
+                cpu.step() and now % 1000 == 0  # Step once to initialize
+            elif cpu_running == "run":
                 cpu.step()
-            elif cpu_running == "run" and now % 1000 == 0:  # Run every 1000 ms
-                cpu.step()
-        elif start["step"]:
+        elif start["step"]: or cpu_running == "step":
             if cpu_running == "":
-                code = rendering.get_code()
-                print(f"Loading code: {code}")
-                cpu.input_handler.load_program_from_string(code)
+                program_code = rendering.get_code()
+                if not cpu.load_program_from_string(program_code):
+                    rendering.set_console_text("Error loading program from GUI editor.")
+                    cpu_running = ""
+                    continue
                 cpu_running = "step"
-            elif cpu_running == "step":
-                cpu.step()
+            cpu.step()
+            # After stepping one instruction, stop stepping
+            if cpu_running == "step":
+                cpu_running = ""
+
         elif start["stop"]:
             cpu_running = ""
-        
-        status = cpu.status(include_registers=True, include_ram=True)
+
+        # Get status info and update GUI register and memory views
         try:
-            rendering.set_registers(status['registers'].items())
-            rendering.set_memory(status['ram'].items())
+            status = cpu.status(include_registers=True, include_ram=True)
+            if 'registers' in status:
+                rendering.set_registers(status['registers'].items())
+            if 'ram' in status:
+                rendering.set_memory(status['ram'].items())
         except Exception as e:
+            # Silently catch errors or optionally log
             pass
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
