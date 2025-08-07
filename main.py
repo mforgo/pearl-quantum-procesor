@@ -3,7 +3,7 @@
 from src.procesor import Procesor
 
 def main():
-    cpu = Procesor(debug=True, mode="quantum")
+    cpu = Procesor(debug=True, mode="hybrid")
     # Load your assembly file; path is relative to where you run main.py
     if not cpu.load_program("programs/quantum_bell.asm"):
         return
