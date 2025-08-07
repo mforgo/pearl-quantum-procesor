@@ -1,0 +1,63 @@
+int name = 1234;
+
+"set p1 1234"
+"push p1"
+-----------------------------------------------
+while(nejaky bool)
+{
+    instrukce;
+}
+
+"vyhodnoceni podminky"
+"neg b"
+"jmpif konec"
+"instrukce"
+"jmp zacatek"
+
+-------------------------------------------------
+for(int i = 0, i < 100, i++)
+{
+    instrukce;
+    instrukce;
+}
+
+"set p1 0"
+"push p1"
+"vyhodnoceni podminky"
+"neg b"
+"jmpif konec"
+"instrukce"
+"operace"
+"jmp zacatek"
+
+-----------------------------------------------------
+if(podminka){
+    instrukce;
+}
+
+"vyhodnoceni podminky"
+"neg b"
+"jmpif konec"
+"instrukce"
+------------------------------------------------------
+int name = load();
+
+--------------------------------------------
+print(name);
+----------------------------------------------------
+a = b + c;
+"mov [b] p1"
+"mov [c] p2"
+"add p1 p2"
+"mov p1 [a]"
+
+a = b - c;
+a = b * c;
+a = b / c;
+
+
+
+p0 = 0
+b = true/false
+p5, p6 - cykly, iterace
+p1, p2 - aritmetika, logika
