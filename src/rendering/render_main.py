@@ -1,6 +1,6 @@
 import pygame
-import background
-import frontground
+from src.rendering import background
+from src.rendering import frontground
 
 class RenderMain:
     def __init__(self):
@@ -18,7 +18,7 @@ class RenderMain:
         self.run_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 8.7), base_color=self.base_color, symbol="RUN")
         self.step_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 13.04), base_color=self.base_color, symbol="STEP")
         self.stop_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 17.39), base_color=self.base_color, symbol="STOP")
-        self.console_window = frontground.Code_window(self.screen, (40.74, 26.09), pos=(7.41, 65.22), base_color=self.base_color)
+        self.console_window = frontground.Code_window(self.screen, (40.74, 26.09), pos=(7.41, 65.22), base_color=self.base_color, active=False)
         self.register_window = [
             frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 8.7), base_color=self.base_color),
             frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 17.39), base_color=self.base_color),
@@ -33,8 +33,7 @@ class RenderMain:
         self.clock = pygame.time.Clock()
 
     def run(self):
-        self.__main_loop()
-        pygame.quit()
+        return self.__main_loop()
 
     def __color(self, percentage):
         """Returns a color based on the percentage."""
@@ -47,11 +46,10 @@ class RenderMain:
                     255 if base_color[2] == 255 else base_color[2] * ((100 - percentage) / 50))
 
     def __main_loop(self):
-        self.console_window.recive_text("some text here", erase=False)
-        while self.running:
-            self.__handle_events()
-            self.__render()
-            self.clock.tick(20)
+        self.console_window.recive_text("some text here", erase=True)
+        self.__handle_events()
+        self.__render()
+        return self.running
 
     def __render(self):
         self.background.render()
@@ -68,15 +66,15 @@ class RenderMain:
     
     def __handle_events(self):
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.running = False
             self.run_button.handle_event(event)
             self.step_button.handle_event(event)
             self.stop_button.handle_event(event)
             self.code_window.handle_event(event)
             self.console_window.handle_event(event)
-            if event.type == pygame.QUIT:
-                self.running = False
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.running = False
             if event.type == pygame.VIDEORESIZE:
                 self.code_window._reinit()
                 self.run_button._reinit()

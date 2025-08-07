@@ -9,7 +9,8 @@ class Code_window:
         screen,  
         size, 
         pos=(0, 0), 
-        base_color=(0, 1, 0)
+        base_color=(0, 1, 0),
+        active=True
     ):
         self.screen = screen
         screen_size = screen.get_size()
@@ -21,7 +22,7 @@ class Code_window:
 
         self.text_lines = [""]           # List of text lines
         self.cursor_pos = [0, 0]         # [line, column]
-        self.active = True
+        self.active = active
 
         self._reinit()
 

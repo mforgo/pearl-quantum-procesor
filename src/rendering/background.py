@@ -1,6 +1,6 @@
 import pygame
 from random import randint
-import frontground
+from src.rendering import frontground
 
 # === CONFIGURATION ===
 CHAR_COLUMNS = 80         # Number of columns of characters

@@ -1,13 +1,23 @@
 # main.py
-
-from src.procesor import Procesor
+import pygame
+from src.rendering import render_main
+from src.procesor import Procesor  
 
 def main():
-    cpu = Procesor(debug=True, mode="hybrid")
-    # Load your assembly file; path is relative to where you run main.py
-    if not cpu.load_program("programs/quantum_bell.asm"):
-        return
-    cpu.run()
+    rendering = render_main.RenderMain()
+    cpu = Procesor()
+    # cpu.run()
+    while True:
+        now = pygame.time.get_ticks()
+        rendering.clock.tick(20)
+        if now % 1000 == 0:
+            print("Main loop running at 1 FPS")
+
+        if not rendering.run():
+            break
+
+    pygame.quit()
+
 
 if __name__ == "__main__":
     main()
