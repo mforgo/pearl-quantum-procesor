@@ -15,16 +15,19 @@ class RenderMain:
         self.base_color = (1, 1, 1)
         self.background = background.Background(self.screen, self.base_color)
         self.code_window = frontground.Code_window(self.screen, (40.74, 52.17), pos=(7.41, 8.7), base_color=self.base_color)
+        self.run_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 8.7), base_color=self.base_color, symbol="RUN")
+        self.step_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 13.04), base_color=self.base_color, symbol="STEP")
+        self.stop_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 17.39), base_color=self.base_color, symbol="STOP")
         self.console_window = frontground.Code_window(self.screen, (40.74, 26.09), pos=(7.41, 65.22), base_color=self.base_color)
         self.register_window = [
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(51.85, 8.7), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(51.85, 17.39), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(51.85, 26.09), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(51.85, 34.78), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(72.22, 8.7), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(72.22, 17.39), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(72.22, 26.09), base_color=self.base_color),
-            frontground.RegisterWindow(self.screen, (16.67, 4.35), pos=(72.22, 34.78), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 8.7), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 17.39), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 26.09), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 34.78), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(74.07, 8.7), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(74.07, 17.39), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(74.07, 26.09), base_color=self.base_color),
+            frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(74.07, 34.78), base_color=self.base_color),
             ]
         self.memory_window = frontground.RegisterWindow(self.screen, (40.74, 47.83), pos=(51.85, 43.48), base_color=self.base_color)
         self.clock = pygame.time.Clock()
@@ -53,6 +56,9 @@ class RenderMain:
     def __render(self):
         self.background.render()
         self.code_window.render()
+        self.run_button.render()
+        self.step_button.render()
+        self.stop_button.render()
         self.console_window.render()
         for window in self.register_window:
             window.render("123456789012345678")
@@ -62,6 +68,9 @@ class RenderMain:
     
     def __handle_events(self):
         for event in pygame.event.get():
+            self.run_button.handle_event(event)
+            self.step_button.handle_event(event)
+            self.stop_button.handle_event(event)
             self.code_window.handle_event(event)
             self.console_window.handle_event(event)
             if event.type == pygame.QUIT:
@@ -70,6 +79,9 @@ class RenderMain:
                 self.running = False
             if event.type == pygame.VIDEORESIZE:
                 self.code_window._reinit()
+                self.run_button._reinit()
+                self.step_button._reinit()
+                self.stop_button._reinit()
                 self.console_window._reinit()
                 for window in self.register_window:
                     window._reinit()
