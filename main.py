@@ -21,14 +21,18 @@ def main():
         start = rendering.get_buttons()
         if start["run"] or cpu_running == "run":
             if cpu_running == "":
-                cpu.input_handler.load_program_from_string(rendering.get_code())
+                code = rendering.get_code()
+                print(f"Loading code: {code}")
+                cpu.input_handler.load_program_from_string(code)
                 cpu_running = "run"
                 cpu.step()
             elif cpu_running == "run":
                 cpu.step()
         elif start["step"]:
             if cpu_running == "":
-                cpu.input_handler.load_program_from_string(rendering.get_code())
+                code = rendering.get_code()
+                print(f"Loading code: {code}")
+                cpu.input_handler.load_program_from_string(code)
                 cpu_running = "step"
             elif cpu_running == "step":
                 cpu.step()
