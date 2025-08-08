@@ -13,7 +13,7 @@ def ExprEval(expr: str, var_stack: list[str]) -> str:
     instructions = []
 
     # Initialize p0 to 0
-    instructions.append(_emit("set p0 0"))
+    instructions.append(_emit("set 0 p0"))
 
     # Load variables from stack into registers
     reg_map = {}
