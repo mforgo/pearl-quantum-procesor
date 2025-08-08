@@ -36,6 +36,13 @@ def main():
     memory_display = ""
     mod = 0
 
+    code_idk = []
+    with open("src/parsing/code.txt", "r", encoding="utf-8") as f:
+        code_idk = f.read().split("\n")
+    
+    print(code_idk)
+    rendering.set_code(code_idk)
+
     while True:
         now = pygame.time.get_ticks()
         rendering.clock.tick(20)  # Limit to ~20 FPS
@@ -60,7 +67,10 @@ def main():
         else:
             memory_display = "Memory is empty"
 
-        if not rendering.run(memory_display, cpu.registers.regs):
+        registers = cpu.registers.regs
+        registers[7] = cpu.registers.get("b")
+
+        if not rendering.run(memory_display, registers):
             break  # Exit main loop if GUI is closed
         
         # Check if processor wants input
