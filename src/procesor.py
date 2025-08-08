@@ -217,6 +217,7 @@ class Procesor:
             if opcode == "dvd": return self._execute_dvd(operands)
             if opcode == "neg": return self._execute_neg(operands)
 
+
             # Quantum gates
             if opcode in ("h","x","y","z","s","t","rx","ry","rz",
                           "cx","cnot","cz","cy","ccx","toffoli","swap"):
@@ -228,6 +229,8 @@ class Procesor:
 
             # Control, I/O, queue, logic, jumps
             if opcode == "cmp": return self._execute_cmp(operands)
+            if opcode == "gt": return self._execute_gt(operands)
+            if opcode == "lt": return self._execute_lt(operands)
             if opcode == "eqq": return self._execute_eqq(operands)
             if opcode == "and": return self._execute_and(operands)
             if opcode == "or": return self._execute_or(operands)
@@ -396,6 +399,30 @@ class Procesor:
         result = a > b
         self.registers.set("b", result)
         return True
+
+    def _execute_gt(self, ops):
+        if len(ops) != 2:
+            raise ValueError("CMP requires 2 operands")
+        a_t, a_v = self.parse_operand(ops[0])
+        b_t, b_v = self.parse_operand(ops[1])
+        a = self.get_operand_value(a_t, a_v)
+        b = self.get_operand_value(b_t, b_v)
+        result = a > b
+        self.registers.set("b", result)
+        return True
+
+    def _execute_lt(self, ops):
+        if len(ops) != 2:
+            raise ValueError("CMP requires 2 operands")
+        a_t, a_v = self.parse_operand(ops[0])
+        b_t, b_v = self.parse_operand(ops[1])
+        a = self.get_operand_value(a_t, a_v)
+        b = self.get_operand_value(b_t, b_v)
+        result = a < b
+        self.registers.set("b", result)
+        return True
+
+
 
     def _execute_eqq(self, ops):
         if len(ops) != 2:
