@@ -22,9 +22,9 @@ def ExprEval(expr: str, var_stack: list[str]) -> str:
         if not reg_pool:
             raise RuntimeError("Too many variables.")
         reg = reg_pool.pop(0)
-        offset = 8 * (i + 1)
+        offset = (i + 1)
         reg_map[var] = reg
-        instructions.append(_emit(f"mov {reg} [rbp-{offset}]"))
+        instructions.append(_emit(f"mov {reg} [{offset}]"))
 
     # Evaluate the expression
     temp_regs = ['p6', 'p5', 'p4', 'p3', 'p2']
