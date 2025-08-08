@@ -12,7 +12,7 @@ class RenderMain:
             self.screen = pygame.display.set_mode((1000, 800), pygame.RESIZABLE)
         pygame.display.set_caption("CPU Emulator")
         self.running = True
-        self.base_color = (0, 1, 1)
+        self.base_color = (1, 1, 1)
         self.background = background.Background(self.screen, self.base_color)
         self.code_window = frontground.Code_window(self.screen, (40.74, 52.17), pos=(7.41, 8.7), base_color=self.base_color)
         self.language_button = frontground.LanguageToggleButton(self.screen, (15, 4), pos=(7.41, 4.35), base_color=self.base_color)

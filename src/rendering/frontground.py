@@ -163,7 +163,7 @@ class Code_window:
                 pygame.draw.rect(
                     self.screen,
                     self._color(70),
-                    (x - 3, y + i * line_height, self.size[0], line_height)
+                    (x - 3, y + i * line_height, self.size[0] - 3, line_height)
                 )
             else:
                 text_surface = self.font.render(line, True, self.text_color)

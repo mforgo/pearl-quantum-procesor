@@ -30,7 +30,7 @@ def main():
     
     # Toggleable debug mode - set to False to disable debug output
     debug_mode = False
-    cpu = Procesor(debug=debug_mode, custom_output_handler=gui_output_handler, custom_input_handler=gui_input_handler)
+    cpu = Procesor(debug=debug_mode, custom_output_handler=gui_output_handler, custom_input_handler=gui_input_handler, mode="hybrid")
 
     cpu_running = ""  # Track CPU run state: "", "run", or "step"
     memory_display = ""
@@ -67,7 +67,7 @@ def main():
         else:
             memory_display = "Memory is empty"
 
-        registers = cpu.registers.regs
+        registers = copy(cpu.registers.regs)
         registers[7] = cpu.registers.get("b")
 
         if not rendering.run(memory_display, registers):
