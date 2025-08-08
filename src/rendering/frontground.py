@@ -552,6 +552,14 @@ class Button:
                     (self.pos[0] + self.size[0] / 4 * 3, self.pos[1] + self.size[1] / 4 * 3),
                     (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] / 4 * 3)
                 ])
+            elif self.symbol == "CLEAR":
+                # Draw an X symbol for clear
+                pygame.draw.line(self.screen, self._color(50), 
+                    (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] / 4),
+                    (self.pos[0] + self.size[0] * 3 / 4, self.pos[1] + self.size[1] * 3 / 4), 3)
+                pygame.draw.line(self.screen, self._color(50), 
+                    (self.pos[0] + self.size[0] * 3 / 4, self.pos[1] + self.size[1] / 4),
+                    (self.pos[0] + self.size[0] / 4, self.pos[1] + self.size[1] * 3 / 4), 3)
 
     def render(self):
         pygame.draw.rect(

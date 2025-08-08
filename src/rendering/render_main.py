@@ -16,6 +16,7 @@ class RenderMain:
         self.background = background.Background(self.screen, self.base_color)
         self.code_window = frontground.Code_window(self.screen, (40.74, 52.17), pos=(7.41, 8.7), base_color=self.base_color)
         self.language_button = frontground.LanguageToggleButton(self.screen, (15, 4), pos=(7.41, 4.35), base_color=self.base_color)
+        self.clear_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 21.74), base_color=self.base_color, symbol="CLEAR")
         self.run_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 8.7), base_color=self.base_color, symbol="RUN")
         self.step_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 13.04), base_color=self.base_color, symbol="STEP")
         self.stop_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 17.39), base_color=self.base_color, symbol="STOP")
@@ -37,6 +38,7 @@ class RenderMain:
         self.working = False
         self.stepping = False
         self.stopping = False
+        self.clearing = False
 
     def run(self, ram, registers):
         self.memory = ram
@@ -51,6 +53,7 @@ class RenderMain:
     def __render(self):
         self.background.render()
         self.language_button.render()
+        self.clear_button.render()
         self.code_window.render()
         self.run_button.render()
         self.step_button.render()
@@ -119,8 +122,13 @@ class RenderMain:
         return {
             "run": self.working,
             "step": self.stepping,
-            "stop": self.stopping
+            "stop": self.stopping,
+            "clear": self.clearing
         }
+    
+    def clear_code_window(self):
+        """Clear the code window"""
+        self.code_window.recive_text([""], erase=True)
     
 
     def __handle_events(self):
@@ -128,6 +136,7 @@ class RenderMain:
         self.working = False
         self.stepping = False
         self.stopping = False
+        self.clearing = False
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -142,6 +151,8 @@ class RenderMain:
                 self.stepping = True
             if self.stop_button.handle_event(event):
                 self.stopping = True
+            if self.clear_button.handle_event(event):
+                self.clearing = True
             
             # Handle language toggle
             new_language = self.language_button.handle_event(event)
@@ -153,6 +164,7 @@ class RenderMain:
             if event.type == pygame.VIDEORESIZE:
                 self.code_window._reinit()
                 self.language_button._reinit()
+                self.clear_button._reinit()
                 self.run_button._reinit()
                 self.step_button._reinit()
                 self.stop_button._reinit()

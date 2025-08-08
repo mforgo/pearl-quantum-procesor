@@ -37,7 +37,7 @@ def main():
     mod = 0
 
     code_idk = []
-    with open("src/programs/gcd.asm", "r", encoding="utf-8") as f:
+    with open("programs/gcd.asm", "r", encoding="utf-8") as f:
         code_idk = f.read().split("\n")
     
     print(code_idk)
@@ -106,6 +106,10 @@ def main():
                 rendering.console_window.input_buffer = ""
             
             start = rendering.get_buttons()
+            
+            # Handle clear button
+            if start["clear"]:
+                rendering.clear_code_window()
             
             # Start CPU run or step on button presses and load program code from GUI editor
             if start["run"] or cpu_running == "run":
