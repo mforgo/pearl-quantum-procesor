@@ -53,8 +53,8 @@ class RenderMain:
     def __render(self):
         self.background.render()
         self.language_button.render()
-        self.clear_button.render()
         self.code_window.render()
+        self.clear_button.render()
         self.run_button.render()
         self.step_button.render()
         self.stop_button.render()
