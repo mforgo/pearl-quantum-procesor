@@ -1,12 +1,20 @@
-in p1
-in p2
-eqq p1 p2
+mov 0 p2
+mov p2 p1
+push p1
+mov [0] p2
+mov 10 p3
+lt p2 p3
 jmpif 10
-cmp p1 p2
-jmpif 8
-sub p1 p2
-jmp 9
-sub p2 p1
-jmp 2
+mov [0] p2
+mov p2 p1
 out p1
-out p7
+mov [0] p2
+mov 5 p3
+lt p2 p3
+jmpif 20
+mov [0] p2
+mov 1 p3
+add p2 p3
+mov p2 p1
+mov p1 [0]
+jmp 10

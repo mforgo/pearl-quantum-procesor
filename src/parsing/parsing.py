@@ -1,9 +1,5 @@
-text = "int n = 0; " \
-"int j = 1; " \
-"if(n > 5)" \
-"{n = n + 1; } " \
-"while(n < 10)" \
-"{n = n + 1; }"
+text = "int n = 5; " \
+"while(n < 10) {n = n + 1}"
 import re
 global PC
 PC = 0  # Global program counter
@@ -12,9 +8,6 @@ def ExprEval(expr: str, var_stack: list[str]) -> str:
     global PC
     instructions = []
 
-    # Initialize p0 to 0
-    instructions.append(_emit("set 0 p0"))
-
     # Load variables from stack into registers
     reg_map = {}
     reg_pool = ['p2', 'p3', 'p4', 'p5', 'p6']
@@ -22,9 +15,9 @@ def ExprEval(expr: str, var_stack: list[str]) -> str:
         if not reg_pool:
             raise RuntimeError("Too many variables.")
         reg = reg_pool.pop(0)
-        offset = (i + 1)
+        offset = i
         reg_map[var] = reg
-        instructions.append(_emit(f"mov {reg} [{offset}]"))
+        instructions.append(_emit(f"mov [{offset}] {reg}"))
 
     # Evaluate the expression
     temp_regs = ['p6', 'p5', 'p4', 'p3', 'p2']
@@ -57,7 +50,7 @@ def _eval_expr(expr: str, target_reg: str, temp_regs, reg_map) -> list[str]:
     i = 0
     left = load_operand(tokens[i])
     if left != target_reg:
-        instructions.append(_emit(f"mov {target_reg} {left}"))
+        instructions.append(_emit(f"mov {left} {target_reg}"))
     i += 1
 
     while i < len(tokens) - 1:
@@ -75,7 +68,6 @@ def _eval_expr(expr: str, target_reg: str, temp_regs, reg_map) -> list[str]:
             instructions.append(_emit(f"div {target_reg} {right}"))
         elif op == '==':
             instructions.append(_emit(f"mov b {target_reg}"))
-            instructions.append(_emit(f"cmp b {right}"))
             instructions.append(_emit(f"eqq b p0"))
             break
         elif op == '<':
@@ -235,3 +227,4 @@ def Parse(tokens):
                 ans += "mov p1 " + str(vars.index(name)) + "\n"
     return ans
 
+print(Parse(Tokenize(text)))
