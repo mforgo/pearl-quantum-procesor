@@ -201,7 +201,7 @@ class Procesor:
             if opcode == "sub": return self._execute_alu(self.classical_alu.sub, operands)
             if opcode == "mul": return self._execute_mul(operands)
             if opcode == "dvd": return self._execute_dvd(operands)
-            if opcode == "nig" or "neg": return self._execute_neg(operands)
+            if opcode == "neg": return self._execute_neg(operands)
 
             # Quantum gates
             if opcode in ("h","x","y","z","s","t","rx","ry","rz",
