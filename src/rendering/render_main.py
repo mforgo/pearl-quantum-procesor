@@ -12,13 +12,13 @@ class RenderMain:
             self.screen = pygame.display.set_mode((1000, 800), pygame.RESIZABLE)
         pygame.display.set_caption("CPU Emulator")
         self.running = True
-        self.base_color = (1, 1, 1)
+        self.base_color = (0, 1, 1)
         self.background = background.Background(self.screen, self.base_color)
         self.code_window = frontground.Code_window(self.screen, (40.74, 52.17), pos=(7.41, 8.7), base_color=self.base_color)
         self.run_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 8.7), base_color=self.base_color, symbol="RUN")
         self.step_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 13.04), base_color=self.base_color, symbol="STEP")
         self.stop_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 17.39), base_color=self.base_color, symbol="STOP")
-        self.console_window = frontground.Code_window(self.screen, (40.74, 26.09), pos=(7.41, 65.22), base_color=self.base_color, active=False)
+        self.console_window = frontground.Console(self.screen, (40.74, 26.09), pos=(7.41, 65.22), base_color=self.base_color)
         self.register_window = [
             frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 8.7), base_color=self.base_color),
             frontground.RegisterWindow(self.screen, (18.52, 4.35), pos=(51.85, 17.39), base_color=self.base_color),
@@ -31,6 +31,11 @@ class RenderMain:
             ]
         self.memory_window = frontground.RegisterWindow(self.screen, (40.74, 47.83), pos=(51.85, 43.48), base_color=self.base_color)
         self.clock = pygame.time.Clock()
+        
+        # Initialize button state variables
+        self.working = False
+        self.stepping = False
+        self.stopping = False
 
     def run(self, ram, registers):
         self.memory = ram
@@ -38,7 +43,6 @@ class RenderMain:
         return self.__main_loop()
 
     def __main_loop(self):
-        self.console_window.recive_text("some text here", erase=True)
         self.__handle_events()
         self.__render()
         return self.running
@@ -51,8 +55,8 @@ class RenderMain:
         self.stop_button.render()
         self.console_window.render()
         for i in range(8):
-            self.register_window[i].render(self.registers[i])
-        self.memory_window.render("")
+            self.register_window[i].render(f"Reg {i}: {self.registers[i]}")
+        self.memory_window.render(self.memory)
         pygame.display.update()
         pygame.display.flip()
     
@@ -65,12 +69,28 @@ class RenderMain:
     def set_console_text(self, text):
         if text is None:
             return
-        self.console_window.recive_text(text, erase=True)
+        self.console_window.add_output(text)
     
     def add_console_text(self, text):
         if text is None:
             return
-        self.console_window.recive_text(text, erase=False)
+        self.console_window.add_output(text)
+    
+    def request_console_input(self):
+        return self.console_window.request_input()
+    
+    def get_console_input(self):
+        return self.console_window.get_input()
+
+    def set_highlight_line(self, line):
+        self.code_window.highlight_line(line)
+    
+    def is_console_waiting_for_input(self):
+        return self.console_window.is_waiting_for_input()
+    
+    def clear_console(self):
+        """Clear the console window"""
+        self.console_window.clear_console()
     
     def set_registers(self, registers):
         for i in range(len(self.register_window)):
@@ -88,14 +108,25 @@ class RenderMain:
     
 
     def __handle_events(self):
+        # Reset button states at the beginning of each frame
+        self.working = False
+        self.stepping = False
+        self.stopping = False
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.running = False
-            self.working = self.run_button.handle_event(event)
-            self.stepping = self.step_button.handle_event(event)
-            self.stopping = self.stop_button.handle_event(event)
+            
+            # Handle button clicks
+            if self.run_button.handle_event(event):
+                self.working = True
+            if self.step_button.handle_event(event):
+                self.stepping = True
+            if self.stop_button.handle_event(event):
+                self.stopping = True
+                
             self.code_window.handle_event(event)
             self.console_window.handle_event(event)
             if event.type == pygame.VIDEORESIZE:

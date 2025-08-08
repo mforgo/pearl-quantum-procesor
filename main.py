@@ -4,61 +4,139 @@ import pygame
 
 from src.rendering import render_main
 from src.procesor import Procesor
+from src.io.gui_output_handler import GUIOutputHandler
+from src.io.gui_input_handler import GUIInputHandler
+from copy import copy
 
 def main():
     pygame.init()
     rendering = render_main.RenderMain()
-    cpu = Procesor(debug=True)
+    highlight_line = None
+    
+    # Create custom output and input handlers for GUI integration
+    gui_output_handler = GUIOutputHandler(rendering)
+    gui_input_handler = GUIInputHandler(rendering)
+    
+    # Toggleable debug mode - set to False to disable debug output
+    debug_mode = False
+    cpu = Procesor(debug=debug_mode, custom_output_handler=gui_output_handler, custom_input_handler=gui_input_handler)
+
     cpu_running = ""  # Track CPU run state: "", "run", or "step"
+    memory_display = ""
+    mod = 0
 
     while True:
         now = pygame.time.get_ticks()
         rendering.clock.tick(20)  # Limit to ~20 FPS
-        print(cpu.registers.regs)
-        # Get status info and update GUI register and memory views
-        status = cpu.status(include_registers=True, include_ram=True)
+        rendering.set_highlight_line(highlight_line)
 
-        if not rendering.run("", cpu.registers.regs):
+        # Debug output - only show when debug_mode is True
+        if debug_mode:
+            print(cpu.registers.regs)
+            print("Memory contents:")
+            if cpu.memory.memory:  
+                for address, value in sorted(cpu.memory.memory.items()):
+                    print(f"  Address {address}: {value}")
+            else:
+                print("  Memory is empty")
+        
+        # Format memory for rendering display
+        if cpu.memory.memory:
+            memory_lines = []
+            for address, value in sorted(cpu.memory.memory.items()):
+                memory_lines.append(f"{address}: {value}")
+            memory_display = ", ".join(memory_lines)
+        else:
+            memory_display = "Memory is empty"
+
+        if not rendering.run(memory_display, cpu.registers.regs):
             break  # Exit main loop if GUI is closed
+        
+        # Check if processor wants input
+        waiting_for_input = cpu.input_handler.is_waiting()
+        
+            
+            # Check if console has input ready (when Enter is pressed)
+        if not rendering.is_console_waiting_for_input():
+            input_value = rendering.get_console_input()
+            if input_value is not None:
+                # Process the input value
+                try:
+                    input_int = int(input_value)
+                    # Set the input value for the CPU to use
+                    cpu.input_handler.pending_input = input_int
+                    # Reset the waiting state
+                    cpu.input_handler.waiting_for_input = False
+                except ValueError:
+                    rendering.add_console_text(f"Invalid input: {input_value}")
+                    # Reset the waiting state even for invalid input
+                    cpu.input_handler.waiting_for_input = False
+        
+        # Activate console and show input prompt when waiting for input
+        if waiting_for_input and cpu_running != "":
+            # Request console input (shows "in:" prompt automatically)
+            rendering.request_console_input()
 
-        start = rendering.get_buttons()
-
-        # Start CPU run or step on button presses and load program code from GUI editor
-        if start["run"] or cpu_running == "run":
+        # Normal CPU execution - only if not waiting for input
+        if not waiting_for_input:
+            # Disable console input when program is not running
             if cpu_running == "":
-                # Load program from GUI code editor string to processor (fixed)
-                program_code = rendering.get_code()
-                if not cpu.load_program_from_string(program_code):
-                    rendering.set_console_text("Error loading program from GUI editor.")
-                    cpu_running = ""
-                    continue
-                cpu_running = "run"
-                cpu.step() and now % 1000 == 0  # Step once to initialize
-            elif cpu_running == "run":
+                rendering.console_window.waiting_for_input = False
+                rendering.console_window.input_buffer = ""
+            
+            start = rendering.get_buttons()
+            
+            # Start CPU run or step on button presses and load program code from GUI editor
+            if start["run"] or cpu_running == "run":
+                if cpu_running == "":
+                    # Load program from GUI code editor string to processor
+                    program_code = rendering.get_code()
+                    if not cpu.load_program_from_string(program_code):
+                        rendering.set_console_text("Error loading program from GUI editor.")
+                        cpu_running = ""
+                        continue
+                    # Clear console when starting new program
+                    rendering.clear_console()
+                    cpu_running = "run"
+                    mod = copy(now)
+                if now - mod > 1000:
+                    mod = copy(now)
+                    highlight_line = cpu.clock
+                    cpu.step()  # Step once to initialize
+            if cpu_running == "step" and start["step"]:
+                highlight_line = cpu.clock
                 cpu.step()
-        elif start["step"] or cpu_running == "step":
-            if cpu_running == "":
-                program_code = rendering.get_code()
-                if not cpu.load_program_from_string(program_code):
-                    rendering.set_console_text("Error loading program from GUI editor.")
-                    cpu_running = ""
-                    continue
-                cpu_running = "step"
-            cpu.step()
-            # After stepping one instruction, stop stepping
-            if cpu_running == "step":
+            elif start["step"]:
+                if cpu_running == "":
+                    cpu_running = "step"
+                    program_code = rendering.get_code()
+                    if not cpu.load_program_from_string(program_code):
+                        rendering.set_console_text("Error loading program from GUI editor.")
+                        cpu_running = ""
+                        continue
+                    # Clear console when starting new program
+                    rendering.clear_console()
+                    highlight_line = cpu.clock
+                    cpu.step()
+            if start["stop"]:
+                highlight_line = None
+                # Debug output - only show when debug_mode is True
+                if debug_mode:
+                    print("stop")
                 cpu_running = ""
-
-        elif start["stop"]:
-            cpu_running = ""
-
+                cpu.registers.regs = [0, 0, 0, 0, 0, 0, 0, 0]
+                # Clear console when stopping
+                rendering.clear_console()
+            
+            # Debug output - only show when debug_mode is True
+            if debug_mode:
+                print(cpu_running)
+                print(start)
         
-        
-        # if status["ram"] != None:
-        #     rendering.set_memory(status['ram'])
-        # else:
-        #     rendering.memory_window.render("00000000")
-        
+        # Debug output - only show when debug_mode is True
+        if debug_mode:
+            print(cpu_running)
+            print(start)
 
 if __name__ == "__main__":
     main()

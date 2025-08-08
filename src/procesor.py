@@ -7,13 +7,15 @@ from .registers import ClassicalRegisters, QuantumRegisters
 from .io import InputHandler, OutputHandler, ProgramLoader
 
 class Procesor:
-    def __init__(self, mode="classical", debug=False, cycle_delay=0):
+    def __init__(self, mode="classical", debug=False, cycle_delay=0, custom_output_handler=None, custom_input_handler=None):
         """
         Initialize the processor.
 
         mode: "classical", "quantum", or "hybrid"
         debug: enable debug output
         cycle_delay: delay in seconds between cycles (0 = no delay)
+        custom_output_handler: custom output handler for GUI integration
+        custom_input_handler: custom input handler for GUI integration
         """
         self.mode = mode
         self.debug = debug
@@ -24,8 +26,8 @@ class Procesor:
         # Core components
         self.registers = ClassicalRegisters()
         self.memory = ClassicalMemory()
-        self.input_handler = InputHandler()
-        self.output_handler = OutputHandler(log_to_file=debug)
+        self.input_handler = custom_input_handler if custom_input_handler else InputHandler()
+        self.output_handler = custom_output_handler if custom_output_handler else OutputHandler(log_to_file=debug)
         self.program_loader = ProgramLoader()
 
         # ALUs
@@ -38,11 +40,12 @@ class Procesor:
             self.quantum_alu = None
 
         self.program = []
+        self.program_finished_shown = False  # Flag to track if "Program finished" was shown
         self._debug_print(f"Procesor initialized in {mode} mode")
 
     def _debug_print(self, message):
         if self.debug:
-            self.output_handler.print_debug(message, debug_enabled=True)
+            self.output_handler.print_debug(message, debug_enabled=self.debug)
 
     def load_program_from_string(self, program_str):
         try:
@@ -60,6 +63,7 @@ class Procesor:
 
             self.registers.set("pc", 0)
             self.clock = 0
+            self.program_finished_shown = False  # Reset flag when loading new program
             self._debug_print(f"Loaded {len(self.program)} instructions from string")
             return True
         except Exception as e:
@@ -128,6 +132,7 @@ class Procesor:
             self.program = self.program_loader.load_program(filename)
             self.registers.set("pc", 0)
             self.clock = 0  # Reset clock when loading new program
+            self.program_finished_shown = False  # Reset flag when loading new program
             self._debug_print(f"Loaded {len(self.program)} instructions")
             return True
         except Exception as e:
@@ -152,12 +157,19 @@ class Procesor:
 
         pc = self.registers.get("pc")
         if pc >= len(self.program):
-            self.output_handler.print_output("Program finished")
+            if not self.program_finished_shown:
+                self.output_handler.print_output("Program finished")
+                self.program_finished_shown = True
             self.running = False
             return False
 
         instr = self.program[pc]
-        self.execute_instruction(instr)
+        result = self.execute_instruction(instr)
+        
+        # If instruction returns False, it means we're waiting for input
+        # Don't increment PC or clock, just return True to keep running
+        if result is False:
+            return True
 
         # Increment clock cycle
         self.clock += 1
@@ -189,7 +201,7 @@ class Procesor:
             if opcode == "sub": return self._execute_alu(self.classical_alu.sub, operands)
             if opcode == "mul": return self._execute_mul(operands)
             if opcode == "dvd": return self._execute_dvd(operands)
-            if opcode == "neg": return self._execute_neg(operands)
+            if opcode == "nig" or "neg": return self._execute_neg(operands)
 
             # Quantum gates
             if opcode in ("h","x","y","z","s","t","rx","ry","rz",
@@ -219,6 +231,7 @@ class Procesor:
         except Exception as e:
             self.output_handler.print_error(f"Error executing {opcode}: {e}")
             self.running = False
+            return False
 
     # === Classical ALU helpers ===
 
@@ -231,6 +244,7 @@ class Procesor:
         b = self.get_operand_value(src_t, src_v)
         res, _ = fn(a, b)
         self.set_operand_value(dst_t, dst_v, res)
+        return True
 
     def _execute_mov(self, ops):
         if len(ops) != 2:
@@ -239,6 +253,7 @@ class Procesor:
         dst_t, dst_v = self.parse_operand(ops[1])
         val = self.get_operand_value(src_t, src_v)
         self.set_operand_value(dst_t, dst_v, val)
+        return True
 
     def _execute_mul(self, ops):
         if len(ops) != 2:
@@ -249,6 +264,7 @@ class Procesor:
         b = self.get_operand_value(src_t, src_v)
         result = a * b
         self.set_operand_value(dst_t, dst_v, result)
+        return True
 
     def _execute_dvd(self, ops):
         if len(ops) != 2:
@@ -261,6 +277,7 @@ class Procesor:
             raise ValueError("Division by zero")
         result = a // b
         self.set_operand_value(dst_t, dst_v, result)
+        return True
 
     def _execute_neg(self, ops):
         if len(ops) != 1:
@@ -269,6 +286,7 @@ class Procesor:
         a = self.get_operand_value(dst_t, dst_v)
         result = -a
         self.set_operand_value(dst_t, dst_v, result)
+        return True
 
     # === Quantum gate dispatcher ===
 
@@ -293,7 +311,7 @@ class Procesor:
             angle = float(ops[0])
             qubit = self.parse_qubit(ops[1])
             fn(qubit, angle)
-            return
+            return True
 
         # Toffoli: 3 qubits
         if opcode in ("ccx","toffoli"):
@@ -301,11 +319,12 @@ class Procesor:
             c2 = self.parse_qubit(ops[1])
             tgt = self.parse_qubit(ops[2])
             fn(c1, c2, tgt)
-            return
+            return True
 
         # Single or two-qubit gates
         qubits = [self.parse_qubit(o) for o in ops]
         fn(*qubits)
+        return True
 
     # === Measurement & Reset ===
 
@@ -316,12 +335,14 @@ class Procesor:
         dst_t, dst_v = self.parse_operand(ops[1])
         bit = self.quantum_registers.measure(q)
         self.set_operand_value(dst_t, dst_v, bit)
+        return True
 
     def _execute_reset(self, ops):
         if len(ops) != 1:
             raise ValueError("RESET requires 1 operand")
         q = self.parse_qubit(ops[0])
         self.quantum_registers.set(q, 0)
+        return True
 
     # === Control / Logic / Jumps ===
 
@@ -334,6 +355,7 @@ class Procesor:
         b = self.get_operand_value(b_t, b_v)
         result = a > b
         self.registers.set("b", result)
+        return True
 
     def _execute_eqq(self, ops):
         if len(ops) != 2:
@@ -344,6 +366,7 @@ class Procesor:
         b = self.get_operand_value(b_t, b_v)
         result = a == b
         self.registers.set("b", result)
+        return True
 
     def _execute_and(self, ops):
         if len(ops) != 1:
@@ -353,6 +376,7 @@ class Procesor:
         b = self.registers.get("b")
         result = bool(a) and bool(b)
         self.registers.set("b", result)
+        return True
 
     def _execute_or(self, ops):
         if len(ops) != 1:
@@ -362,12 +386,14 @@ class Procesor:
         b = self.registers.get("b")
         result = bool(a) or bool(b)
         self.registers.set("b", result)
+        return True
 
     def _execute_not(self, ops):
         if len(ops) != 1 or ops[0] != 'b':
             raise ValueError("NOT only works for b register")
         value = self.registers.get('b')
         self.registers.set('b', not value)
+        return True
 
     def _execute_jmp(self, ops):
         if len(ops) != 1:
@@ -377,6 +403,7 @@ class Procesor:
             self.registers.set("pc", target)
         else:
             raise ValueError(f"Jump target {target} out of range")
+        return True
 
     def _execute_jmpif(self, ops):
         if len(ops) != 1:
@@ -387,6 +414,7 @@ class Procesor:
                 self.registers.set("pc", target)
             else:
                 raise ValueError(f"Jump target {target} out of range")
+        return True
 
     # === I/O Operations ===
 
@@ -396,13 +424,29 @@ class Procesor:
         t, v = self.parse_operand(ops[0])
         value = self.get_operand_value(t, v)
         self.output_handler.print_output(f"OUT: {value}")
+        return True
 
     def _execute_in(self, ops):
         if len(ops) != 1:
             raise ValueError("IN requires 1 operand")
         t, v = self.parse_operand(ops[0])
-        input_val = self.input_handler.read_keyboard_input(f"IN for {ops[0]}: ")
-        self.set_operand_value(t, v, int(input_val))
+        
+        # Check if we have a custom input handler with pending input
+        if hasattr(self.input_handler, 'pending_input') and self.input_handler.pending_input is not None:
+            input_val = str(self.input_handler.pending_input)
+            self.input_handler.pending_input = None  # Clear the pending input
+            self.set_operand_value(t, v, int(input_val))
+            return True  # Input processed successfully
+        else:
+            # Request input and wait for it
+            input_val = self.input_handler.read_keyboard_input(f"IN for {ops[0]}: ")
+            if input_val is not None:
+                self.set_operand_value(t, v, int(input_val))
+                return True  # Input processed successfully
+            else:
+                # If no input available, don't increment PC - stay on this instruction
+                # This will be handled by the main loop which pauses execution
+                return False
 
     # === Queue Operations ===
 
@@ -412,6 +456,7 @@ class Procesor:
         t, v = self.parse_operand(ops[0])
         value = self.get_operand_value(t, v)
         self.memory.memory.append(value)
+        return True
 
     def _execute_pop(self, ops):
         if len(ops) != 1:
@@ -420,12 +465,14 @@ class Procesor:
         if self.memory.memory:
             value = self.memory.memory.popleft()
             self.set_operand_value(t, v, value)
+        return True
 
     def _execute_pp(self, ops):
         """Peek and push - move front element to back"""
         if self.memory.memory:
             value = self.memory.memory.popleft()
             self.memory.memory.append(value)
+        return True
 
     # === Operands and Registers ===
 

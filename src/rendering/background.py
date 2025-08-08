@@ -2,6 +2,7 @@ import pygame
 from random import randint
 from src.rendering import frontground
 
+
 # === CONFIGURATION ===
 CHAR_COLUMNS = 80         # Number of columns of characters
 FPS = 20                  # Frames per second

@@ -23,7 +23,7 @@ class Code_window:
         self.text_lines = [""]           # List of text lines
         self.cursor_pos = [0, 0]         # [line, column]
         self.active = active
-
+        self.highlighted_line = None
         self._reinit()
 
         self.padding = 8                 # Padding inside window
@@ -151,26 +151,43 @@ class Code_window:
             2  # thickness
         )
 
-        # Draw text lines
+        # Draw text lines, with highlighted line
         x = self.pos[0] + self.padding
         y = self.pos[1] + self.padding
         line_height = self.font.get_height()
 
         for i, line in enumerate(self.text_lines):
-            text_surface = self.font.render(line, True, self.text_color)
+            if i == self.highlighted_line:
+                text_surface = self.font.render(line, True, self._color(20))
+                pygame.draw.rect(
+                    self.screen,
+                    self._color(70),
+                    (x - 3, y + i * line_height, self.size[0], line_height)
+                )
+            else:
+                text_surface = self.font.render(line, True, self.text_color)
             self.screen.blit(text_surface, (x, y + i * line_height))
 
         # Draw caret
         line, col = self.cursor_pos
         caret_x = x + self.font.size(self.text_lines[line][:col])[0]
         caret_y = y + line * line_height
-        pygame.draw.line(
-            self.screen, 
-            self.caret_color,
-            (caret_x, caret_y),
-            (caret_x, caret_y + line_height), 
-            2
-        )
+        if self.highlighted_line == line:
+            pygame.draw.line(
+                self.screen,
+                self._color(20),
+                (caret_x, caret_y),
+                (caret_x, caret_y + line_height), 
+                2
+            )
+        else:
+            pygame.draw.line(
+                self.screen, 
+                self.caret_color,
+                (caret_x, caret_y),
+                (caret_x, caret_y + line_height), 
+                2
+            )
     
     def return_text(self):
         """
@@ -186,6 +203,157 @@ class Code_window:
             self.text_lines.append(text)
             self.text_lines.append("")  
             self.cursor_pos[1] = len(self.text_lines[0])
+    
+    def highlight_line(self, line):
+        self.highlighted_line = line
+
+class Console:
+    """
+    A console window for input/output with cursor at the end.
+    """
+    def __init__(self, screen, size, pos=(0, 0), base_color=(0, 1, 0)):
+        self.screen = screen
+        self.percentage_size = (size[0] / 100, size[1] / 100)
+        self.percentage_pos = (pos[0] / 100, pos[1] / 100)
+        self.base_color = base_color
+        self.output_lines = []
+        self.input_buffer = ""
+        self.waiting_for_input = False
+        self.input_prompt = "in: "
+        self.output_prefix = "out: "
+        self.scroll_offset = 0  # Track how many lines to scroll up
+        self.max_visible_lines = 15  # Maximum lines visible at once
+        self._reinit()
+    
+    def _reinit(self):
+        self.screen_size = self.screen.get_size()
+        self.char_size = max(self.screen_size[0] // 130, 1)
+        self.font = pygame.font.SysFont("consolas", int(self.char_size * 1.5))
+        self.size = (self.screen_size[0] * self.percentage_size[0], self.screen_size[1] * self.percentage_size[1])
+        self.pos = (self.screen_size[0] * self.percentage_pos[0], self.screen_size[1] * self.percentage_pos[1])
+    
+    def _color(self, percentage):
+        """
+        Calculate color based on percentage (0-100).
+        """
+        base = [int(c * 255) for c in self.base_color]
+        if percentage <= 50:
+            factor = percentage / 50
+            return tuple(int(b * factor) for b in base)
+        else:
+            factor = (percentage - 50) / 50
+            return tuple(int(b + (255 - b) * factor) for b in base)
+    
+    def add_output(self, text):
+        """
+        Add output text with 'out:' prefix.
+        """
+        # Remove the "OUT: " prefix if it's already in the text
+        if text.startswith("OUT: "):
+            text = text[5:]  # Remove "OUT: " prefix
+        
+        self.output_lines.append(f"{self.output_prefix}{text}")
+        # Keep only last 20 lines to prevent overflow
+        if len(self.output_lines) > 20:
+            self.output_lines = self.output_lines[-20:]
+    
+    def clear_console(self):
+        """
+        Clear all output lines and reset input buffer.
+        """
+        self.output_lines = []
+        self.input_buffer = ""
+        self.waiting_for_input = False
+    
+    def request_input(self):
+        """
+        Request input from user. Returns True if input is ready.
+        """
+        self.waiting_for_input = True
+        return False
+    
+    def get_input(self):
+        """
+        Get the current input buffer and clear it.
+        """
+        if self.input_buffer:
+            input_value = self.input_buffer
+            self.input_buffer = ""
+            self.waiting_for_input = False
+            return input_value
+        return None
+    
+    def is_waiting_for_input(self):
+        """
+        Check if console is waiting for input.
+        """
+        return self.waiting_for_input
+    
+    def handle_event(self, event):
+        """
+        Handle keyboard events for input.
+        """
+        if not self.waiting_for_input:
+            return False
+            
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                # Input complete - add the input to output lines
+                if self.input_buffer:
+                    self.output_lines.append(f"{self.input_prompt}{self.input_buffer}")
+                self.waiting_for_input = False
+                return True
+            elif event.key == pygame.K_BACKSPACE:
+                if self.input_buffer:
+                    self.input_buffer = self.input_buffer[:-1]
+            elif event.unicode and event.unicode.isprintable():
+                self.input_buffer += event.unicode
+        return False
+    
+    def render(self):
+        """
+        Render the console with output and input.
+        """
+        # Draw background
+        pygame.draw.rect(
+            self.screen, 
+            self._color(10),
+            (*self.pos, *self.size)
+        )
+        
+        # Draw outline
+        outline_rect = pygame.Rect(
+            self.pos[0], self.pos[1], self.size[0], self.size[1]
+        )
+        pygame.draw.rect(
+            self.screen,
+            self._color(50),
+            outline_rect,
+            2  # thickness
+        )
+
+        # Draw text
+        x = self.pos[0] + 8
+        y = self.pos[1] + 8
+        line_height = self.font.get_height() + 2
+        
+        # Draw output lines
+        for line in self.output_lines:
+            text_surface = self.font.render(line, True, self._color(50))
+            self.screen.blit(text_surface, (x, y))
+            y += line_height
+        
+        # Draw input line with cursor only when waiting for input
+        if self.waiting_for_input:
+            input_line = f"{self.input_prompt}{self.input_buffer}"
+            # Add blinking cursor
+            import time
+            if int(time.time() * 2) % 2:  # Blink every 0.5 seconds
+                input_line += "|"
+            
+            text_surface = self.font.render(input_line, True, self._color(50))
+            self.screen.blit(text_surface, (x, y))
+
 
 class RegisterWindow:
     
