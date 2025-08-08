@@ -233,6 +233,23 @@ class Procesor:
             self.running = False
             return False
 
+    def _execute_push(self, ops):
+        if len(ops) != 1:
+            raise ValueError("PUSH requires 1 operand")
+        t, v = self.parse_operand(ops[0])
+        value = self.get_operand_value(t, v)
+        self.memory.push(value)
+
+    def _execute_pop(self, ops):
+        if len(ops) != 1:
+            raise ValueError("POP requires 1 operand")
+        t, v = self.parse_operand(ops[0])
+        try:
+            value = self.memory.pop()
+        except IndexError:
+            raise RuntimeError("POP from empty queue")
+        self.set_operand_value(t, v, value)
+
     # === Classical ALU helpers ===
 
     def _execute_alu(self, fn, ops):
