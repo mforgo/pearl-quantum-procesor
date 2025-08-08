@@ -7,6 +7,17 @@ from src.procesor import Procesor
 from src.io.gui_output_handler import GUIOutputHandler
 from src.io.gui_input_handler import GUIInputHandler
 from copy import copy
+from src.parsing import parsing
+
+def convert_piquang_to_assembly(piquang_code):
+    """
+    Convert Piquang code to assembly.
+    This is a placeholder implementation - you can expand this based on your Piquang language specification.
+    """
+    # For now, just return the code as-is (treating it as assembly)
+    # You can implement the actual conversion logic here
+    code = parsing.Parse(parsing.Tokenize(piquang_code))
+    return code
 
 def main():
     pygame.init()
@@ -90,7 +101,15 @@ def main():
             if start["run"] or cpu_running == "run":
                 if cpu_running == "":
                     # Load program from GUI code editor string to processor
-                    program_code = rendering.get_code()
+                    code_info = rendering.get_code_with_language()
+                    program_code = code_info["code"]
+                    current_language = code_info["language"]
+                    
+                    # Handle different languages
+                    if current_language == "piquang":
+                        # Convert Piquang to assembly (placeholder for now)
+                        program_code = convert_piquang_to_assembly(program_code)
+                    
                     if not cpu.load_program_from_string(program_code):
                         rendering.set_console_text("Error loading program from GUI editor.")
                         cpu_running = ""
@@ -109,7 +128,15 @@ def main():
             elif start["step"]:
                 if cpu_running == "":
                     cpu_running = "step"
-                    program_code = rendering.get_code()
+                    code_info = rendering.get_code_with_language()
+                    program_code = code_info["code"]
+                    current_language = code_info["language"]
+                    
+                    # Handle different languages
+                    if current_language == "piquang":
+                        # Convert Piquang to assembly (placeholder for now)
+                        program_code = convert_piquang_to_assembly(program_code)
+                    
                     if not cpu.load_program_from_string(program_code):
                         rendering.set_console_text("Error loading program from GUI editor.")
                         cpu_running = ""

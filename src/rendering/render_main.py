@@ -15,6 +15,7 @@ class RenderMain:
         self.base_color = (0, 1, 1)
         self.background = background.Background(self.screen, self.base_color)
         self.code_window = frontground.Code_window(self.screen, (40.74, 52.17), pos=(7.41, 8.7), base_color=self.base_color)
+        self.language_button = frontground.LanguageToggleButton(self.screen, (15, 4), pos=(7.41, 4.35), base_color=self.base_color)
         self.run_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 8.7), base_color=self.base_color, symbol="RUN")
         self.step_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 13.04), base_color=self.base_color, symbol="STEP")
         self.stop_button = frontground.Button(self.screen, (3.7, 4.35), pos=(44.44, 17.39), base_color=self.base_color, symbol="STOP")
@@ -49,6 +50,7 @@ class RenderMain:
 
     def __render(self):
         self.background.render()
+        self.language_button.render()
         self.code_window.render()
         self.run_button.render()
         self.step_button.render()
@@ -62,6 +64,17 @@ class RenderMain:
     
     def get_code(self):
         return self.code_window.return_text()
+    
+    def get_language(self):
+        """Get current language"""
+        return self.code_window.get_language()
+    
+    def get_code_with_language(self):
+        """Get code with language information"""
+        return {
+            "language": self.code_window.get_language(),
+            "code": self.code_window.return_text()
+        }
 
     def get_console_text(self):
         return self.console_window.return_text()
@@ -126,11 +139,17 @@ class RenderMain:
                 self.stepping = True
             if self.stop_button.handle_event(event):
                 self.stopping = True
+            
+            # Handle language toggle
+            new_language = self.language_button.handle_event(event)
+            if new_language:
+                self.code_window.set_language(new_language)
                 
             self.code_window.handle_event(event)
             self.console_window.handle_event(event)
             if event.type == pygame.VIDEORESIZE:
                 self.code_window._reinit()
+                self.language_button._reinit()
                 self.run_button._reinit()
                 self.step_button._reinit()
                 self.stop_button._reinit()

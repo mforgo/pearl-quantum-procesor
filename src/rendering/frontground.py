@@ -2,7 +2,7 @@ import pygame
 
 class Code_window:
     """
-    Renders a text input window for code editing.
+    Renders a text input window for code editing with language switching.
     """
     def __init__(
         self, 
@@ -24,6 +24,7 @@ class Code_window:
         self.cursor_pos = [0, 0]         # [line, column]
         self.active = active
         self.highlighted_line = None
+        self.language = "assembly"       # Current language: "assembly" or "piquang"
         self._reinit()
 
         self.padding = 8                 # Padding inside window
@@ -206,6 +207,15 @@ class Code_window:
     
     def highlight_line(self, line):
         self.highlighted_line = line
+    
+    def get_language(self):
+        """Get current language"""
+        return self.language
+    
+    def set_language(self, language):
+        """Set current language"""
+        if language in ["assembly", "piquang"]:
+            self.language = language
 
 class Console:
     """
@@ -408,6 +418,83 @@ class RegisterWindow:
         
         text_surface = self.font.render(str(text), True, self._color(50))
         self.screen.blit(text_surface, (x, y))
+
+class LanguageToggleButton:
+    """
+    A button for switching between assembly and Piquang languages.
+    """
+    def __init__(self, screen, size, pos=(0, 0), base_color=(0, 1, 0)):
+        self.screen = screen
+        self.percentage_size = (size[0] / 100, size[1] / 100)
+        self.percentage_pos = (pos[0] / 100, pos[1] / 100)
+        self.base_color = base_color
+        self.language = "assembly"  # Current language
+        self._reinit()
+    
+    def _reinit(self):
+        self.screen_size = self.screen.get_size()
+        self.size = (self.screen_size[0] * self.percentage_size[0], self.screen_size[1] * self.percentage_size[1])
+        self.pos = (self.screen_size[0] * self.percentage_pos[0], self.screen_size[1] * self.percentage_pos[1])
+        self.char_size = max(self.screen_size[0] // 130, 1)
+        self.font = pygame.font.SysFont("consolas", int(self.char_size * 1.2))
+    
+    def _color(self, percentage):
+        """
+        Calculate color based on percentage (0-100).
+        """
+        base = [int(c * 255) for c in self.base_color]
+        if percentage <= 50:
+            factor = percentage / 50
+            return tuple(int(b * factor) for b in base)
+        else:
+            factor = (percentage - 50) / 50
+            return tuple(int(b + (255 - b) * factor) for b in base)
+    
+    def toggle_language(self):
+        """Toggle between assembly and Piquang"""
+        if self.language == "assembly":
+            self.language = "piquang"
+        else:
+            self.language = "assembly"
+        return self.language
+    
+    def get_language(self):
+        """Get current language"""
+        return self.language
+    
+    def render(self):
+        # Draw background
+        pygame.draw.rect(
+            self.screen,
+            self._color(10),
+            (*self.pos, *self.size)
+        )
+        
+        # Draw outline
+        outline_rect = pygame.Rect(
+            self.pos[0], self.pos[1], self.size[0], self.size[1]
+        )
+        pygame.draw.rect(
+            self.screen,
+            self._color(50),
+            outline_rect,
+            2  # thickness
+        )
+        
+        # Draw language text
+        text = f"Lang: {self.language.upper()}"
+        text_surface = self.font.render(text, True, self._color(50))
+        text_rect = text_surface.get_rect(center=(self.pos[0] + self.size[0] // 2, 
+                                                  self.pos[1] + self.size[1] // 2))
+        self.screen.blit(text_surface, text_rect)
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            if (self.pos[0] <= mouse_x <= self.pos[0] + self.size[0] and
+                self.pos[1] <= mouse_y <= self.pos[1] + self.size[1]):
+                return self.toggle_language()  # Return the new language
+        return None  # No language change
 
 class Button:
     """
