@@ -1,12 +1,12 @@
 in p1
 in p2
 eqq p1 p2
-jmpif 10 
-gt p1 p2
+jmpif 10
+cmp p1 p2
 jmpif 8
 sub p1 p2
 jmp 9
 sub p2 p1
 jmp 2
 out p1
-
+out p7
