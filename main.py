@@ -37,7 +37,7 @@ def main():
     mod = 0
 
     code_idk = []
-    with open("src/parsing/code.txt", "r", encoding="utf-8") as f:
+    with open("src/programs/gcd.asm", "r", encoding="utf-8") as f:
         code_idk = f.read().split("\n")
     
     print(code_idk)
