@@ -197,6 +197,7 @@ class Procesor:
         try:
             # Classical ALU ops
             if opcode == "mov": return self._execute_mov(operands)
+            if opcode == "set": return self._execute_set(operands)
             if opcode == "add": return self._execute_alu(self.classical_alu.add, operands)
             if opcode == "sub": return self._execute_alu(self.classical_alu.sub, operands)
             if opcode == "mul": return self._execute_mul(operands)
@@ -261,6 +262,15 @@ class Procesor:
         b = self.get_operand_value(src_t, src_v)
         res, _ = fn(a, b)
         self.set_operand_value(dst_t, dst_v, res)
+        return True
+    
+    def _execute_set(self, ops):
+        if len(ops) != 2:
+            raise ValueError("MOV requires 2 operands")
+        src_t, src_v = self.parse_operand(ops[1])
+        dst_t, dst_v = self.parse_operand(ops[0])
+        val = self.get_operand_value(src_t, src_v)
+        self.set_operand_value(dst_t, dst_v, val)
         return True
 
     def _execute_mov(self, ops):
