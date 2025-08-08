@@ -109,6 +109,7 @@ def main():
                     if current_language == "piquang":
                         # Convert Piquang to assembly (placeholder for now)
                         program_code = convert_piquang_to_assembly(program_code)
+                        print(program_code)
                     
                     if not cpu.load_program_from_string(program_code):
                         rendering.set_console_text("Error loading program from GUI editor.")
