@@ -475,32 +475,6 @@ class Procesor:
                 # This will be handled by the main loop which pauses execution
                 return False
 
-    # === Queue Operations ===
-
-    def _execute_push(self, ops):
-        if len(ops) != 1:
-            raise ValueError("PUSH requires 1 operand")
-        t, v = self.parse_operand(ops[0])
-        value = self.get_operand_value(t, v)
-        self.memory.memory.append(value)
-        return True
-
-    def _execute_pop(self, ops):
-        if len(ops) != 1:
-            raise ValueError("POP requires 1 operand")
-        t, v = self.parse_operand(ops[0])
-        if self.memory.memory:
-            value = self.memory.memory.popleft()
-            self.set_operand_value(t, v, value)
-        return True
-
-    def _execute_pp(self, ops):
-        """Peek and push - move front element to back"""
-        if self.memory.memory:
-            value = self.memory.memory.popleft()
-            self.memory.memory.append(value)
-        return True
-
     # === Operands and Registers ===
 
     def parse_operand(self, op):
