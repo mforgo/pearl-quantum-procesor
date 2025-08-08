@@ -235,5 +235,3 @@ def Parse(tokens):
                 ans += "mov p1 " + str(vars.index(name)) + "\n"
     return ans
 
-
-print(Parse(Tokenize(text)))
