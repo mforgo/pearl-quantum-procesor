@@ -41,6 +41,7 @@ class Procesor:
 
         self.program = []
         self.program_finished_shown = False  # Flag to track if "Program finished" was shown
+        self.source_line_mapping = []  # Maps program index to original source line number
         self._debug_print(f"Procesor initialized in {mode} mode")
 
     def _debug_print(self, message):
@@ -51,15 +52,20 @@ class Procesor:
         try:
             if hasattr(self.program_loader, 'parse_program_str'):
                 self.program = self.program_loader.parse_program_str(program_str)
+                # For parsed programs, assume sequential line numbers
+                self.source_line_mapping = list(range(len(self.program)))
             else:
                 lines = [line.strip() for line in program_str.strip().splitlines() if line.strip() and not line.strip().startswith('#')]
                 instructions = []
-                for line in lines:
+                source_lines = []
+                for i, line in enumerate(lines):
                     parts = line.split()
                     opcode = parts[0]
                     operands = parts[1:] if len(parts) > 1 else []
                     instructions.append({"opcode": opcode, "operands": operands})
+                    source_lines.append(i)  # Original line number (0-based)
                 self.program = instructions
+                self.source_line_mapping = source_lines
 
             self.registers.set("pc", 0)
             self.clock = 0
@@ -187,6 +193,13 @@ class Procesor:
     def report_clock(self):
         """Report total clock cycles used."""
         self.output_handler.print_output(f"Total cycles: {self.clock}")
+    
+    def get_current_source_line(self):
+        """Get the current source line number for highlighting."""
+        pc = self.registers.get("pc")
+        if 0 <= pc < len(self.source_line_mapping):
+            return self.source_line_mapping[pc]
+        return None
 
     def execute_instruction(self, instr):
         """Dispatch and execute a single instruction."""

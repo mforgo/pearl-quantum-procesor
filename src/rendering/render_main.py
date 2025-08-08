@@ -65,6 +65,9 @@ class RenderMain:
     def get_code(self):
         return self.code_window.return_text()
     
+    def set_code(self, code):
+        self.code_window.recive_text(code)
+    
     def get_language(self):
         """Get current language"""
         return self.code_window.get_language()

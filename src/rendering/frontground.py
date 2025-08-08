@@ -198,7 +198,7 @@ class Code_window:
     
     def recive_text(self, text, erase=True):
         if erase:
-            self.text_lines = [text]
+            self.text_lines = text
             self.cursor_pos = [0, 0]
         else:
             self.text_lines.append(text)
